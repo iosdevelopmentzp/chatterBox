@@ -9,4 +9,5 @@ import Foundation
 
 struct MessageTextCellModel {
     let message: String
+    let isOutput: Bool
 }

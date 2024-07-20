@@ -14,6 +14,9 @@ final class MessageTextCell: UICollectionViewCell {
     private let textLabel = UILabel(frame: .zero)
     private let messageContainer = UIView()
     
+    private let outputMessageBackground = UIColor.blue
+    private let inputMessageBackground = UIColor.lightGray
+    
     // MARK: - Constructor
     
     override init(frame: CGRect) {
@@ -70,9 +73,27 @@ final class MessageTextCell: UICollectionViewCell {
         maxWidthConstraint.isActive = true
     }
     
+    func updateUI(isOutputMessage: Bool) {
+        let transform: CGAffineTransform
+        let backgroundColor: UIColor
+        
+        if isOutputMessage {
+            transform = CGAffineTransform(scaleX: -1, y: 1)
+            backgroundColor = self.outputMessageBackground
+        } else {
+            transform = CGAffineTransform.identity
+            backgroundColor = self.inputMessageBackground
+        }
+        
+        contentView.transform = transform
+        textLabel.transform = transform
+        messageContainer.backgroundColor = backgroundColor
+    }
+    
     // MARK: - Configure
     
     func configure(model: MessageTextCellModel) {
         self.textLabel.text = model.message
+        updateUI(isOutputMessage: model.isOutput)
     }
 }
