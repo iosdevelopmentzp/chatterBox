@@ -8,6 +8,13 @@
 import UIKit
 
 class MessageComposerView: UIView {
+    // MARK: - Nested
+    
+    enum Event {
+        case didTapSendButton
+        case textDidChange(String)
+    }
+    
     // MARK: - UI Components
     
     private let stackView = UIStackView(frame: .zero)
@@ -15,6 +22,10 @@ class MessageComposerView: UIView {
     private let sendButton = UIButton(type: .system)
     private let topSeparator = UIView(frame: .zero)
     private let bottomSeparator = UIView(frame: .zero)
+    
+    // MARK: - Handlers
+    
+    var onEvent: ((Event) -> Void)?
     
     // MARK: - Constructor
     
@@ -87,11 +98,11 @@ class MessageComposerView: UIView {
     
     @objc private func textFieldDidChange(_ textField: UITextField) {
         updateSendButtonState(animated: true)
+        self.onEvent?(.textDidChange(textField.text ?? ""))
     }
     
     @objc private func sendButtonTapped() {
-        print("Send button tapped with message: \(textField.text ?? "")")
-        // Implement sending logic or delegate method here
+        self.onEvent?(.didTapSendButton)
     }
     
     // MARK: - Configure

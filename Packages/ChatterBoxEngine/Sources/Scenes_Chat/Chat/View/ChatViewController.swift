@@ -49,6 +49,7 @@ public final class ChatViewController: UIViewController {
         setupConstraints()
         setupViews()
         bindViewModel()
+        setupUserInteractions()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -127,6 +128,19 @@ public final class ChatViewController: UIViewController {
             .store(in: &subscriptions)
     }
 
+    // MARK: - User Interactions
+    
+    func setupUserInteractions() {
+        messageComposerView.onEvent = { [weak self] event in
+            switch event {
+            case .didTapSendButton:
+                self?.viewModel.didTapSendButton()
+                
+            case .textDidChange(let text):
+                self?.viewModel.didChangeText(text)
+            }
+        }
+    }
     
     // MARK: - Keyboard Notifications
     
@@ -194,7 +208,6 @@ extension ChatViewController: UICollectionViewDataSource {
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let identifier = String(describing: MessageTextCell.self)
-        
         
         let cell: UICollectionViewCell
         
