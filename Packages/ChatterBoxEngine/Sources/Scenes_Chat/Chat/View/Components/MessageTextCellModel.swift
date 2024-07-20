@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct MessageTextCellModel {
+struct MessageTextCellModel: Hashable {
+    let id: String
     let message: String
     let isOutput: Bool
 }

@@ -22,7 +22,7 @@ class MessageComposerView: UIView {
         super.init(frame: frame)
         setupViews()
         setupConstraints()
-        configureComponents()
+        setupComponentsUserInteractions()
     }
     
     required init?(coder: NSCoder) {
@@ -48,8 +48,6 @@ class MessageComposerView: UIView {
         
         topSeparator.backgroundColor = .separator
         bottomSeparator.backgroundColor = .separator
-        
-        textField.placeholder = "Enter your message here"
     }
     
     private func setupConstraints() {
@@ -80,7 +78,7 @@ class MessageComposerView: UIView {
         sendButton.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
     
-    private func configureComponents() {
+    private func setupComponentsUserInteractions() {
         textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         sendButton.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
     }
@@ -94,6 +92,16 @@ class MessageComposerView: UIView {
     @objc private func sendButtonTapped() {
         print("Send button tapped with message: \(textField.text ?? "")")
         // Implement sending logic or delegate method here
+    }
+    
+    // MARK: - Configure
+    
+    func configure(model: MessageComposerViewModel) {
+        textField.placeholder = model.placeholder
+        if textField.text != model.text {
+            textField.text = model.text
+        }
+        updateSendButtonState(animated: false)
     }
     
     // MARK: - Private Functions

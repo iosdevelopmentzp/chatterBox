@@ -6,11 +6,24 @@
 //
 
 import UIKit
+import Combine
+
+struct ChatViewControllerState: Hashable {
+    enum Message: Hashable {
+        case text(MessageTextCellModel)
+        case images(urls: [String])
+    }
+    
+    let navigationTitle: String
+    let messages: [Message]
+    let composerViewModel: MessageComposerViewModel
+}
 
 public final class ChatViewController: UIViewController {
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
+    private var subscriptions = Set<AnyCancellable>()
     
     // MARK: - UI Components
     
@@ -35,6 +48,7 @@ public final class ChatViewController: UIViewController {
         super.viewDidLoad()
         setupConstraints()
         setupViews()
+        bindViewModel()
     }
     
     public override func viewWillAppear(_ animated: Bool) {
@@ -76,9 +90,45 @@ public final class ChatViewController: UIViewController {
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
         // Apply a vertical flip transform to the collection view
         collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
-        
-        self.navigationItem.title = "Chat"
     }
+    
+    // MARK: - Binding
+    
+    private func bindViewModel() {
+        let statePublisher = viewModel.$state
+            .receive(on: RunLoop.main)
+            .share()
+
+        // Bind navigation title updates
+        statePublisher
+            .map { $0.navigationTitle }
+            .removeDuplicates()
+            .sink { [weak self] title in
+                self?.navigationItem.title = title
+            }
+            .store(in: &subscriptions)
+
+        // Bind messages updates
+        statePublisher
+            .map { $0.messages }
+            .removeDuplicates()
+            .sink { [weak self] messages in
+                self?.collectionView.reloadData()
+            }
+            .store(in: &subscriptions)
+
+        // Bind composer view model updates
+        statePublisher
+            .map { $0.composerViewModel }
+            .removeDuplicates()
+            .sink { [weak self] composerViewModel in
+                self?.messageComposerView.configure(model: composerViewModel)
+            }
+            .store(in: &subscriptions)
+    }
+
+    
+    // MARK: - Keyboard Notifications
     
     private func setupKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
@@ -89,8 +139,6 @@ public final class ChatViewController: UIViewController {
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
         NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
     }
-    
-    // MARK: - Keyboard Notifications
     
     @objc private func keyboardWillShow(notification: NSNotification) {
         if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
@@ -141,14 +189,27 @@ extension ChatViewController: UICollectionViewDataSource {
     }
     
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        viewModel.messageCellModels.count
+        viewModel.state.messages.count
     }
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let identifier = String(describing: MessageTextCell.self)
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
-        let model = viewModel.messageCellModels[indexPath.row]
-        cell.configure(model: model)
+        
+        
+        let cell: UICollectionViewCell
+        
+        let model = self.viewModel.state.messages[indexPath.row]
+        
+        switch model {
+        case .text(let model):
+            let textCell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
+            textCell.configure(model: model)
+            cell = textCell
+            
+        case .images:
+            fatalError("Unsupported cell type at this moment")
+        }
+        
         // Apply a vertical flip transform to each cell
         cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
         return cell
