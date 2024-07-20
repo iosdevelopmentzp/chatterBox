@@ -14,7 +14,6 @@
 		2335A1532C4BB3310064ED8A /* ChatterBoxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */; };
 		2335A1552C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1542C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift */; };
 		2335A1642C4BC1200064ED8A /* Coordinators in Frameworks */ = {isa = PBXBuildFile; productRef = 2335A1632C4BC1200064ED8A /* Coordinators */; };
-		2388D25D2C4C532200AAA7FE /* ChatterBox.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2388D25B2C4C532200AAA7FE /* ChatterBox.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,7 +45,6 @@
 		2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterBoxUITests.swift; sourceTree = "<group>"; };
 		2335A1542C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterBoxUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		2335A1612C4BBDC10064ED8A /* ChatterBoxEngine */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ChatterBoxEngine; path = Packages/ChatterBoxEngine; sourceTree = "<group>"; };
-		2388D25C2C4C532200AAA7FE /* ChatterBox.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = ChatterBox.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,7 +102,6 @@
 				2335A1332C4BB32E0064ED8A /* SceneDelegate.swift */,
 				2335A13C2C4BB3300064ED8A /* LaunchScreen.storyboard */,
 				2335A13F2C4BB3300064ED8A /* Info.plist */,
-				2388D25B2C4C532200AAA7FE /* ChatterBox.xcdatamodeld */,
 			);
 			path = ChatterBox;
 			sourceTree = "<group>";
@@ -265,7 +262,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2388D25D2C4C532200AAA7FE /* ChatterBox.xcdatamodeld in Sources */,
 				2335A1322C4BB32E0064ED8A /* AppDelegate.swift in Sources */,
 				2335A1342C4BB32E0064ED8A /* SceneDelegate.swift in Sources */,
 			);
@@ -605,20 +601,6 @@
 			productName = Coordinators;
 		};
 /* End XCSwiftPackageProductDependency section */
-
-/* Begin XCVersionGroup section */
-		2388D25B2C4C532200AAA7FE /* ChatterBox.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				2388D25C2C4C532200AAA7FE /* ChatterBox.xcdatamodel */,
-			);
-			currentVersion = 2388D25C2C4C532200AAA7FE /* ChatterBox.xcdatamodel */;
-			name = ChatterBox.xcdatamodeld;
-			path = /Users/dmytrov/Desktop/ChatterBox/ChatterBox/ChatterBox.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 2335A1262C4BB32E0064ED8A /* Project object */;
 }

@@ -7,7 +7,15 @@ let package = Package(
     name: "ChatterBoxEngine",
     platforms: [.iOS(.v15)],
     products: [
+        // core
+        
         .library(name: "Coordinators", targets: ["Coordinators"]),
+        .library(name: "Core", targets: ["Core"]),
+        .library(name: "CoreDataPersistents", targets: ["CoreDataPersistents"]),
+        
+        // services
+        
+        
         
         // scenes
         
@@ -17,6 +25,10 @@ let package = Package(
         .target(name: "Coordinators", dependencies: [
             "Scenes_Chat"
         ]),
+        
+        .target(name: "Core"),
+        
+        .target(name: "CoreDataPersistents"),
         
         .target(name: "Scenes_Chat"),
         
