@@ -13,6 +13,7 @@
 		2335A1492C4BB3310064ED8A /* ChatterBoxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1482C4BB3310064ED8A /* ChatterBoxTests.swift */; };
 		2335A1532C4BB3310064ED8A /* ChatterBoxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */; };
 		2335A1552C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1542C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift */; };
+		2335A1642C4BC1200064ED8A /* Coordinators in Frameworks */ = {isa = PBXBuildFile; productRef = 2335A1632C4BC1200064ED8A /* Coordinators */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,6 +52,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2335A1642C4BC1200064ED8A /* Coordinators in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +81,7 @@
 				2335A1472C4BB3310064ED8A /* ChatterBoxTests */,
 				2335A1512C4BB3310064ED8A /* ChatterBoxUITests */,
 				2335A12F2C4BB32E0064ED8A /* Products */,
+				2335A1622C4BC1200064ED8A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,6 +123,13 @@
 			path = ChatterBoxUITests;
 			sourceTree = "<group>";
 		};
+		2335A1622C4BC1200064ED8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -136,6 +146,9 @@
 			dependencies = (
 			);
 			name = ChatterBox;
+			packageProductDependencies = (
+				2335A1632C4BC1200064ED8A /* Coordinators */,
+			);
 			productName = ChatterBox;
 			productReference = 2335A12E2C4BB32E0064ED8A /* ChatterBox.app */;
 			productType = "com.apple.product-type.application";
@@ -581,6 +594,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2335A1632C4BC1200064ED8A /* Coordinators */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Coordinators;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 2335A1262C4BB32E0064ED8A /* Project object */;
 }
