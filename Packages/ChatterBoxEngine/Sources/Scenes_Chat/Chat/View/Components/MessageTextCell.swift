@@ -18,8 +18,8 @@ final class MessageTextCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupConstraints()
         setupViews()
+        setupConstraints()
     }
     
     required init?(coder: NSCoder) {
@@ -28,11 +28,19 @@ final class MessageTextCell: UICollectionViewCell {
     
     // MARK: - Setup
     
-    private func setupConstraints() {
+    private func setupViews() {
         contentView.addSubview(contentContainer)
         contentContainer.addSubview(messageContainer)
         messageContainer.addSubview(textLabel)
         
+        textLabel.numberOfLines = 0
+        
+        messageContainer.backgroundColor = .systemBlue
+        messageContainer.layer.cornerRadius = 15
+        messageContainer.clipsToBounds = true
+    }
+    
+    private func setupConstraints() {
         contentContainer.translatesAutoresizingMaskIntoConstraints = false
         textLabel.translatesAutoresizingMaskIntoConstraints = false
         messageContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -45,9 +53,9 @@ final class MessageTextCell: UICollectionViewCell {
             contentContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
             /* messageContainer */
-            messageContainer.topAnchor.constraint(equalTo: contentContainer.topAnchor, constant: 8),
+            messageContainer.topAnchor.constraint(equalTo: contentContainer.topAnchor, constant: 4),
             messageContainer.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor, constant: 8),
-            messageContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -8),
+            messageContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -4),
             
             /* textLabel */
             textLabel.topAnchor.constraint(equalTo: messageContainer.topAnchor, constant: 8),
@@ -60,18 +68,6 @@ final class MessageTextCell: UICollectionViewCell {
         let maxWidthConstraint = messageContainer.widthAnchor.constraint(lessThanOrEqualTo: contentContainer.widthAnchor, multiplier: 0.8)
         maxWidthConstraint.priority = UILayoutPriority(rawValue: 999)
         maxWidthConstraint.isActive = true
-    }
-    
-    private func setupViews() {
-        textLabel.numberOfLines = 0
-        
-        contentContainer.backgroundColor = .lightGray
-        
-        messageContainer.backgroundColor = .systemBlue
-        messageContainer.layer.cornerRadius = 15
-        messageContainer.clipsToBounds = true
-        
-        contentView.backgroundColor = .blue
     }
     
     // MARK: - Configure

@@ -15,6 +15,7 @@ public final class ChatViewController: UIViewController {
     // MARK: - UI Components
     
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+    private let messageComposerView = MessageComposerView(frame: .zero)
     
     // MARK: - Constructor
     
@@ -31,7 +32,6 @@ public final class ChatViewController: UIViewController {
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .green
         self.navigationItem.title = "Chat"
         
         setupConstraints()
@@ -42,12 +42,20 @@ public final class ChatViewController: UIViewController {
     
     private func setupConstraints() {
         view.addSubview(collectionView)
+        view.addSubview(messageComposerView)
+        
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        messageComposerView.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+            collectionView.bottomAnchor.constraint(equalTo: self.messageComposerView.topAnchor),
+            
+            messageComposerView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            messageComposerView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            messageComposerView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
     
@@ -73,7 +81,6 @@ public final class ChatViewController: UIViewController {
             let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
             
             let section = NSCollectionLayoutSection(group: group)
-            section.interGroupSpacing = 5
             
             return section
         }
