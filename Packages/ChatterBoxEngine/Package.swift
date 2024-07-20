@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "ChatterBoxEngine",
+    platforms: [.iOS(.v15)],
     products: [
         .library(name: "Coordinators", targets: ["Coordinators"]),
         

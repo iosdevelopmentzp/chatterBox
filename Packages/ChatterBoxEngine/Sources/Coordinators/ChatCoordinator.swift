@@ -10,7 +10,8 @@ import Scenes_Chat
 
 final class ChatCoordinator: NavigationCoordinator {
     override func start() {
-        let viewController = ChatViewController()
+        let viewModel = ChatViewModel()
+        let viewController = ChatViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
     }
 }
