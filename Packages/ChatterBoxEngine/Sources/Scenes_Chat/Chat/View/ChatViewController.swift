@@ -67,7 +67,7 @@ public final class ChatViewController: UIViewController {
             
             let item = NSCollectionLayoutItem(layoutSize: itemSize)
             
-            item.contentInsets = NSDirectionalEdgeInsets(top: 2, leading: 10, bottom: 2, trailing: 10)
+            item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
             
             let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
             let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
