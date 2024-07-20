@@ -6,11 +6,11 @@
 //
 
 import UIKit
+import Scenes_Chat
 
 final class ChatCoordinator: NavigationCoordinator {
     override func start() {
-        let viewController = UIViewController()
-        viewController.view.backgroundColor = .red
+        let viewController = ChatViewController()
         navigationController.pushViewController(viewController, animated: true)
     }
 }
