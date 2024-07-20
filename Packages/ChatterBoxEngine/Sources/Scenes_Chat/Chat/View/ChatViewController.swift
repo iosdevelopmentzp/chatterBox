@@ -8,21 +8,44 @@
 import UIKit
 import Combine
 
-struct ChatViewControllerState: Hashable {
-    enum Message: Hashable {
-        case text(MessageTextCellModel)
+struct ChatViewSection: Hashable {
+    // MARK: - Nested
+    
+    enum SectionType: Hashable {
+        case main
+    }
+    
+    enum RowItem: Hashable {
+        case textMessage(MessageTextCellModel)
         case images(urls: [String])
     }
     
+    // MARK: - Proeprties
+    
+    let type: SectionType
+    let items: [RowItem]
+}
+
+struct ChatViewState: Hashable {
     let navigationTitle: String
-    let messages: [Message]
+    let sections: [ChatViewSection]
     let composerViewModel: MessageComposerViewModel
 }
 
 public final class ChatViewController: UIViewController {
+    // MARK: - Nested
+    
+    private typealias DataSource = UICollectionViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.RowItem>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<ChatViewSection.SectionType, ChatViewSection.RowItem>
+    
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
+    
+    private lazy var dataSource = DataSource(collectionView: collectionView) { [weak self] in
+        self?.cell(for: $1, item: $2)
+    }
+    
     private var subscriptions = Set<AnyCancellable>()
     
     // MARK: - UI Components
@@ -86,7 +109,6 @@ public final class ChatViewController: UIViewController {
     }
     
     private func setupViews() {
-        collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
         // Apply a vertical flip transform to the collection view
@@ -111,10 +133,15 @@ public final class ChatViewController: UIViewController {
 
         // Bind messages updates
         statePublisher
-            .map { $0.messages }
+            .map { $0.sections }
             .removeDuplicates()
-            .sink { [weak self] messages in
-                self?.collectionView.reloadData()
+            .sink { [weak self] sections in
+                var snapshot = Snapshot()
+                snapshot.appendSections(sections.map(\.type))
+                sections.forEach { section in
+                    snapshot.appendItems(section.items, toSection: section.type)
+                    self?.dataSource.apply(snapshot, animatingDifferences: true)
+                }
             }
             .store(in: &subscriptions)
 
@@ -193,39 +220,19 @@ public final class ChatViewController: UIViewController {
             return section
         }
     }
-}
-
-// MARK: - UICollectionViewDataSource
-
-extension ChatViewController: UICollectionViewDataSource {
-    public func numberOfSections(in collectionView: UICollectionView) -> Int {
-        1
-    }
     
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        viewModel.state.messages.count
-    }
-    
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    private func cell(for indexPath: IndexPath, item: ChatViewSection.RowItem) -> UICollectionViewCell {
         let identifier = String(describing: MessageTextCell.self)
-        
-        let cell: UICollectionViewCell
-        
-        let model = self.viewModel.state.messages[indexPath.row]
-        
-        switch model {
-        case .text(let model):
-            let textCell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
-            textCell.configure(model: model)
-            cell = textCell
-            
+        switch item {
+        case .textMessage(let model):
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
+            cell.configure(model: model)
+            // Apply a vertical flip transform to the cell
+            cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
+            return cell
         case .images:
-            fatalError("Unsupported cell type at this moment")
+            fatalError("Images handling not implemented")
         }
-        
-        // Apply a vertical flip transform to each cell
-        cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
-        return cell
     }
 }
 

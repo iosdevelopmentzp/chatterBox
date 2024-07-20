@@ -9,13 +9,13 @@ import Foundation
 
 private struct ChatViewModelContext {
     var inputText: String
-    var newMessage: ChatViewControllerState.Message?
+    var newRowItem: ChatViewSection.RowItem?
 }
 
 public class ChatViewModel {
     // MARK: - Properties
     
-    @Published private(set) var state: ChatViewControllerState
+    @Published private(set) var state: ChatViewState
     
     // MARK: - Private properties
     
@@ -41,9 +41,10 @@ public class ChatViewModel {
     ]
     
     public init() {
+        let rowItems = Self.messageCellModels.map({ ChatViewSection.RowItem.textMessage($0) })
         self.state = .init(
             navigationTitle: "Chat",
-            messages: Self.messageCellModels.map({ ChatViewControllerState.Message.text($0) }),
+            sections: [.init(type: .main, items: rowItems)],
             composerViewModel: .init(text: "")
         )
     }
@@ -55,7 +56,9 @@ public class ChatViewModel {
         guard !messageText.isEmpty else {
             return
         }
-        context.newMessage = .text(.init(id: String(UUID().hashValue), message: messageText, isOutput: true))
+        context.newRowItem = .textMessage(
+            .init(id: String(UUID().hashValue), message: messageText, isOutput: true)
+        )
         self.refreshState()
     }
     
@@ -73,20 +76,22 @@ public class ChatViewModel {
     // MARK: - State Factory
     
     private static func makeState(
-        _ previousState: ChatViewControllerState?,
+        _ previousState: ChatViewState?,
         context: inout ChatViewModelContext
-    ) -> ChatViewControllerState {
-        let previousMessages = previousState?.messages ?? []
-        let newMessages = context.newMessage.map { [$0] } ?? []
-        context.newMessage = nil
+    ) -> ChatViewState {
+        let previousRows = (previousState?.sections ?? []).flatMap(\.items)
+        let newRows = context.newRowItem.map { [$0] } ?? []
+        context.newRowItem = nil
         
-        if !newMessages.isEmpty {
+        if !newRows.isEmpty {
             context.inputText = ""
         }
         
+        let newSection = ChatViewSection(type: .main, items: newRows + previousRows)
+        
         return .init(
             navigationTitle: "Chat",
-            messages: newMessages + previousMessages,
+            sections: [newSection],
             composerViewModel: .init(text: context.inputText)
         )
     }
