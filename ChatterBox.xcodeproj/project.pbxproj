@@ -9,9 +9,6 @@
 /* Begin PBXBuildFile section */
 		2335A1322C4BB32E0064ED8A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1312C4BB32E0064ED8A /* AppDelegate.swift */; };
 		2335A1342C4BB32E0064ED8A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1332C4BB32E0064ED8A /* SceneDelegate.swift */; };
-		2335A1362C4BB32E0064ED8A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1352C4BB32E0064ED8A /* ViewController.swift */; };
-		2335A1392C4BB32E0064ED8A /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2335A1382C4BB32E0064ED8A /* Base */; };
-		2335A13B2C4BB3300064ED8A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2335A13A2C4BB3300064ED8A /* Assets.xcassets */; };
 		2335A13E2C4BB3300064ED8A /* Base in Resources */ = {isa = PBXBuildFile; fileRef = 2335A13D2C4BB3300064ED8A /* Base */; };
 		2335A1492C4BB3310064ED8A /* ChatterBoxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1482C4BB3310064ED8A /* ChatterBoxTests.swift */; };
 		2335A1532C4BB3310064ED8A /* ChatterBoxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */; };
@@ -39,9 +36,6 @@
 		2335A12E2C4BB32E0064ED8A /* ChatterBox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatterBox.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2335A1312C4BB32E0064ED8A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2335A1332C4BB32E0064ED8A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		2335A1352C4BB32E0064ED8A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		2335A1382C4BB32E0064ED8A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		2335A13A2C4BB3300064ED8A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2335A13D2C4BB3300064ED8A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		2335A13F2C4BB3300064ED8A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2335A1442C4BB3310064ED8A /* ChatterBoxTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChatterBoxTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -101,9 +95,6 @@
 			children = (
 				2335A1312C4BB32E0064ED8A /* AppDelegate.swift */,
 				2335A1332C4BB32E0064ED8A /* SceneDelegate.swift */,
-				2335A1352C4BB32E0064ED8A /* ViewController.swift */,
-				2335A1372C4BB32E0064ED8A /* Main.storyboard */,
-				2335A13A2C4BB3300064ED8A /* Assets.xcassets */,
 				2335A13C2C4BB3300064ED8A /* LaunchScreen.storyboard */,
 				2335A13F2C4BB3300064ED8A /* Info.plist */,
 			);
@@ -231,9 +222,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2335A13B2C4BB3300064ED8A /* Assets.xcassets in Resources */,
 				2335A13E2C4BB3300064ED8A /* Base in Resources */,
-				2335A1392C4BB32E0064ED8A /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,7 +247,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2335A1362C4BB32E0064ED8A /* ViewController.swift in Sources */,
 				2335A1322C4BB32E0064ED8A /* AppDelegate.swift in Sources */,
 				2335A1342C4BB32E0064ED8A /* SceneDelegate.swift in Sources */,
 			);
@@ -297,14 +285,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		2335A1372C4BB32E0064ED8A /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				2335A1382C4BB32E0064ED8A /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		2335A13C2C4BB3300064ED8A /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -446,7 +426,6 @@
 				INFOPLIST_FILE = ChatterBox/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -473,7 +452,6 @@
 				INFOPLIST_FILE = ChatterBox/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
