@@ -43,6 +43,7 @@
 		2335A14E2C4BB3310064ED8A /* ChatterBoxUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChatterBoxUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterBoxUITests.swift; sourceTree = "<group>"; };
 		2335A1542C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatterBoxUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		2335A1612C4BBDC10064ED8A /* ChatterBoxEngine */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = ChatterBoxEngine; path = Packages/ChatterBoxEngine; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +74,7 @@
 		2335A1252C4BB32E0064ED8A = {
 			isa = PBXGroup;
 			children = (
+				2335A1612C4BBDC10064ED8A /* ChatterBoxEngine */,
 				2335A1302C4BB32E0064ED8A /* ChatterBox */,
 				2335A1472C4BB3310064ED8A /* ChatterBoxTests */,
 				2335A1512C4BB3310064ED8A /* ChatterBoxUITests */,
