@@ -76,7 +76,7 @@ final class MessageTextCell: UICollectionViewCell {
     func updateUI(isOutputMessage: Bool) {
         let transform: CGAffineTransform
         let backgroundColor: UIColor
-        
+
         if isOutputMessage {
             transform = CGAffineTransform(scaleX: -1, y: 1)
             backgroundColor = self.outputMessageBackground
@@ -84,9 +84,9 @@ final class MessageTextCell: UICollectionViewCell {
             transform = CGAffineTransform.identity
             backgroundColor = self.inputMessageBackground
         }
-        
-        contentView.transform = transform
-        textLabel.transform = transform
+  
+        contentContainer.transform = transform
+        messageContainer.transform = transform
         messageContainer.backgroundColor = backgroundColor
     }
     

@@ -74,6 +74,8 @@ public final class ChatViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
+        // Apply a vertical flip transform to the collection view
+        collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
         
         self.navigationItem.title = "Chat"
     }
@@ -147,6 +149,8 @@ extension ChatViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
         let model = viewModel.messageCellModels[indexPath.row]
         cell.configure(model: model)
+        // Apply a vertical flip transform to each cell
+        cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
         return cell
     }
 }
