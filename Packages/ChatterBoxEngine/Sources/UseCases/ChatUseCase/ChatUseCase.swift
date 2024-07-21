@@ -11,14 +11,24 @@ import StorageServices
 import Combine
 
 public protocol ChatUseCaseProtocol {
+    func saveConversation(_ conversation: Conversation)
+    
+    func saveMessage(text: String, conversation: Conversation, senderID: String?)
+    func deleteMessage(message: Message)
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never>
 }
 
-final class ChatUseCase {
+final class ChatUseCase: ChatUseCaseProtocol {
     private let storageService: ChatterBoxerLocalStorageServiceProtocol
     
     init(storageService: ChatterBoxerLocalStorageServiceProtocol) {
         self.storageService = storageService
+    }
+    
+    // MARK: - ChatUseCaseProtocol
+    
+    func saveConversation(_ conversation: Conversation) {
+        storageService.saveConversation(conversation)
     }
     
     func saveMessage(text: String, conversation: Conversation, senderID: String?) {

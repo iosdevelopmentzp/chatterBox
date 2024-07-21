@@ -18,8 +18,8 @@ extension UserEntity {
 
     @NSManaged public var userID: String?
     @NSManaged public var username: String?
-    @NSManaged public var conversations: NSSet?
-    @NSManaged public var messages: NSSet?
+    @NSManaged public var conversations: Set<ConversationEntity>?
+    @NSManaged public var messages: Set<MessageEntity>?
 
 }
 

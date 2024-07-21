@@ -20,8 +20,8 @@ extension ConversationEntity {
     @NSManaged public var lastMessage: String?
     @NSManaged public var lastMessageTime: Date?
     @NSManaged public var title: String?
-    @NSManaged public var messages: NSSet?
-    @NSManaged public var participants: NSSet?
+    @NSManaged public var messages: Set<MessageEntity>?
+    @NSManaged public var participants: Set<UserEntity>?
 
 }
 
