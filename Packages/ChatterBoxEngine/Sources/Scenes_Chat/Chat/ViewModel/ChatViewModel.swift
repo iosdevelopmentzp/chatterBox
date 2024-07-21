@@ -97,8 +97,7 @@ public class ChatViewModel {
     
     // MARK: - Output
     
-    func setupObservers(cancellations: inout Set<AnyCancellable>
-    ) {
+    func setupObservers(cancellations: inout Set<AnyCancellable>) {
         self.chatUseCase
             .messagesPublisher(conversationID: self.conversation.id)
             .receive(on: RunLoop.main)

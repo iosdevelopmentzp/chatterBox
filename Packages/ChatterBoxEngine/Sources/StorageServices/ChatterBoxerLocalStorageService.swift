@@ -38,19 +38,24 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     
     func saveConversation(_ conversation: Conversation) {
         mainContext.performAndWait {
-            let conversationEntity = ConversationEntity(context: self.mainContext)
-            conversationEntity.conversationID = conversation.id
-            conversationEntity.lastMessage = conversation.lastMessage
-            conversationEntity.lastMessageTime = conversation.lastMessageTime
-            conversationEntity.title = conversation.title
+            do {
+                let conversationEntity = ConversationEntity(context: self.mainContext)
+                conversationEntity.conversationID = conversation.id
+                conversationEntity.lastMessage = conversation.lastMessage
+                conversationEntity.lastMessageTime = conversation.lastMessageTime
+                conversationEntity.title = conversation.title
+                
+                let relatedMessages: [MessageEntity] = try self.fetchEntities(by: #keyPath(MessageEntity.conversation.conversationID), withID: conversation.id)
+                conversationEntity.messages = Set(relatedMessages)
+                
+                let participants: [UserEntity] = try fetchEntities(by: #keyPath(UserEntity.userID), withIDs: conversation.participantsID)
+                conversationEntity.participants = Set(participants)
+                
+                self.saveContext()
+            } catch {
+                debugPrint("Failed save conversation: \(error.localizedDescription)")
+            }
             
-            let relatedMessages: [MessageEntity] = self.fetchUniqueEntitiesBy(idKeyPath: #keyPath(MessageEntity.conversation.conversationID), id: conversation.id)
-            conversationEntity.messages = Set(relatedMessages)
-            
-            let participants: [UserEntity] = fetchUsers(withConversationID: conversation.id)
-            conversationEntity.participants = Set(participants)
-            
-            self.saveContext()
         }
     }
     
@@ -62,61 +67,73 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     func getUser(id: String) -> User? {
         var user: User? = nil
         mainContext.performAndWait {
-            guard let userEntity: UserEntity = self.fetchUniqueEntityById(idKey: #keyPath(UserEntity.userID), id: id) else {
-                return
+            do {
+                guard let userEntity: UserEntity = try self.fetchEntity(by: #keyPath(UserEntity.userID), withID: id) else {
+                    return
+                }
+                
+                user = User(entity: userEntity)
+            } catch {
+                debugPrint("Failed get user id: \(id). Error: \(error)")
             }
             
-            user = User(entity: userEntity)
         }
         return user
     }
     
     func saveUser(_ user: User) {
         mainContext.performAndWait {
-            let userEntity = UserEntity(context: self.mainContext)
-            userEntity.userID = user.id
-            userEntity.username = user.username
-            let messages: [MessageEntity] = self.fetchUniqueEntitiesBy(idKeyPath: #keyPath(MessageEntity.sender.userID), id: user.id)
-            userEntity.messages = Set(messages)
-            let conversations: [ConversationEntity] = self.fetchConversations(withParticipantID: user.id)
-            userEntity.conversations = Set(conversations)
-            self.saveContext()
+            do {
+                let userEntity = UserEntity(context: self.mainContext)
+                userEntity.userID = user.id
+                userEntity.username = user.username
+                let messages: [MessageEntity] =  try self.fetchEntities(by: #keyPath(MessageEntity.sender.userID), withID: user.id)
+                userEntity.messages = Set(messages)
+                let conversations: [ConversationEntity] = self.fetchConversations(withParticipantID: user.id)
+                userEntity.conversations = Set(conversations)
+                self.saveContext()
+            } catch {
+                debugPrint("Failed save user: \(error.localizedDescription)")
+            }
         }
     }
     
     func saveMessage(_ message: Message) {
         mainContext.performAndWait {
-            let messageEntity = MessageEntity(context: self.mainContext)
-            messageEntity.messageID = message.id
-            messageEntity.type = message.type.rawValue
-            messageEntity.content = message.content
-            messageEntity.timestamp = message.timestamp
-            
-            if let senderID = message.senderID {
-                messageEntity.sender = fetchUniqueEntityById(
-                    idKey: #keyPath(UserEntity.userID),
-                    id: senderID
-                )
+            do {
+                let messageEntity = MessageEntity(context: self.mainContext)
+                messageEntity.messageID = message.id
+                messageEntity.type = message.type.rawValue
+                messageEntity.content = message.content
+                messageEntity.timestamp = message.timestamp
+                
+                if let senderID = message.senderID {
+                    messageEntity.sender = try self.fetchEntity(by: #keyPath(UserEntity.userID), withID: senderID)
+                }
+                
+                if let conversationID = message.conversationID {
+                    messageEntity.conversation =  try self.fetchEntity(by: #keyPath(ConversationEntity.conversationID), withID: conversationID)
+                }
+                
+                self.saveContext()
+            } catch {
+                debugPrint("Failed save message: \(error.localizedDescription)")
             }
             
-            if let conversationID = message.conversationID {
-                messageEntity.conversation = fetchUniqueEntityById(
-                    idKey: #keyPath(ConversationEntity.conversationID),
-                    id: conversationID
-                )
-            }
-            
-            self.saveContext()
         }
     }
     
     func deleteMessage(_ message: Message) {
         mainContext.performAndWait {
-            if let messageEntity = fetchUniqueEntityById(idKey: #keyPath(MessageEntity.messageID), id: message.id) {
-                mainContext.delete(messageEntity)
-                
-                self.saveContext()
-            } else {
+            do {
+                if let messageEntity = try fetchEntity(by: #keyPath(MessageEntity.messageID), withID: message.id) {
+                    mainContext.delete(messageEntity)
+                    
+                    self.saveContext()
+                } else {
+                    debugPrint("Failed delete message action. Message was not find. message with ID \(message.id) ")
+                }
+            } catch {
                 debugPrint("Failed to find message with ID \(message.id) to delete.")
             }
         }
@@ -124,13 +141,16 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never> {
         let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "conversation.conversationID == %@", conversationID)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: true)]
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", #keyPath(MessageEntity.conversation.conversationID), conversationID)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
         
         do {
             let fetchedMessages = try FetchedObjectList<MessageEntity>(fetchRequest: fetchRequest, context: mainContext)
             return fetchedMessages.objects
-                .map { $0.map(Message.init) }
+                .map {
+                    _ = fetchedMessages
+                    return $0.map(Message.init)
+                }
                 .eraseToAnyPublisher()
         } catch {
             // Handle Error appropriately
@@ -169,32 +189,23 @@ extension ChatterBoxerLocalStorageService {
         }
     }
     
-    private func fetchUniqueEntitiesBy<T: NSManagedObject>(idKeyPath: String, id: String) -> [T] {
-        let typeName = String(describing: T.self)
-        let fetchRequest = NSFetchRequest<T>(entityName: typeName)
-        fetchRequest.predicate = NSPredicate(format: "%@ == %@", idKeyPath, id)
-        
-        do {
-            let entities = try mainContext.fetch(fetchRequest)
-            return entities
-        } catch {
-            debugPrint("Failed to fetch entity with ID \(id) type: \(typeName) Error: \(error)")
-            return []
-        }
+    private func fetchEntities<T: NSManagedObject>(by keyPath: String, withID id: String) throws -> [T] {
+        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", keyPath, id)
+        return try mainContext.fetch(fetchRequest)
+    }
+
+    private func fetchEntities<T: NSManagedObject>(by keyPath: String, withIDs ids: [String]) throws -> [T] {
+        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
+        fetchRequest.predicate = NSPredicate(format: "%K IN %@", keyPath, ids)
+        return try mainContext.fetch(fetchRequest)
     }
     
-    private func fetchUniqueEntityById<T: NSManagedObject>(idKey: String, id: String) -> T? {
-        let typeName = String(describing: T.self)
-        let fetchRequest = NSFetchRequest<T>(entityName: typeName)
-        fetchRequest.predicate = NSPredicate(format: "%@ == %@", idKey, id)
+    private func fetchEntity<T: NSManagedObject>(by keyPath: String, withID id: String) throws -> T? {
+        let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", keyPath, id)
         fetchRequest.fetchLimit = 1
-        do {
-            let entities = try mainContext.fetch(fetchRequest)
-            return entities.first
-        } catch {
-            debugPrint("Failed to fetch entity with ID \(id) type: \(typeName) Error: \(error)")
-            return nil
-        }
+        return try mainContext.fetch(fetchRequest).first
     }
     
     private func saveContext() {
@@ -212,7 +223,7 @@ private extension Message {
     init(entity: MessageEntity) {
         self = .init(
             id: entity.messageID ?? "",
-            type: entity.messageID.flatMap { MessageType(rawValue: $0) } ?? .unknown,
+            type: entity.type.flatMap { MessageType(rawValue: $0) } ?? .unknown,
             conversationID: entity.conversation?.conversationID,
             senderID: entity.sender?.userID,
             content: entity.content ?? "",
