@@ -11,6 +11,7 @@ import DependencyInjector
 import CoreStorageService
 import UseCases
 import StorageServices
+import ImageCacheKit
 
 public class MainAssembly: Assembly {
     public init() {
@@ -22,5 +23,6 @@ public class MainAssembly: Assembly {
         CoreStorageServiceAssembly().assemble(resolver: resolver)
         UseCasesAssembly().assemble(resolver: resolver)
         StorageServicesAssembly().assemble(resolver: resolver)
+        ImageCacheKitAssembly().assemble(resolver: resolver)
     }
 }

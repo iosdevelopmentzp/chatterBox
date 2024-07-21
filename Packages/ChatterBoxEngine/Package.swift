@@ -19,6 +19,7 @@ let package = Package(
         
         .library(name: "CoreStorageService", targets: ["CoreStorageService"]),
         .library(name: "StorageServices", targets: ["StorageServices"]),
+        .library(name: "ImageCacheKit", targets: ["ImageCacheKit"]),
         
         // use cases
         
@@ -45,7 +46,8 @@ let package = Package(
             "DependencyInjector",
             "CoreStorageService",
             "UseCases",
-            "StorageServices"
+            "StorageServices",
+            "ImageCacheKit"
         ]),
         
         // services
@@ -58,15 +60,21 @@ let package = Package(
             "CoreStorageService"
         ]),
         
-        .target(name: "Scenes_Chat", dependencies: [
-            "Core",
-            "UseCases"
-        ]),
+        .target(name: "ImageCacheKit", dependencies: ["DependencyInjector"]),
+        
+        // use cases
         
         .target(name: "UseCases", dependencies: [
             "StorageServices",
             "Core",
             "DependencyInjector"
+        ]),
+        
+        // scenes
+    
+        .target(name: "Scenes_Chat", dependencies: [
+            "Core",
+            "UseCases"
         ]),
         
         .testTarget(name: "ChatterBoxEngineTests", dependencies: []),
