@@ -6,16 +6,19 @@
 //
 
 import UIKit
+import DependencyInjector
 
 public final class AppCoordinator: NavigationCoordinator {
     // MARK: - Properties
     
     private let window: UIWindow
+    private let dependencyInjector: DependencyInjector
     
     // MARK: - Constructor
     
-    public init(window: UIWindow) {
+    public init(window: UIWindow, dependencyInjector: DependencyInjector) {
         self.window = window
+        self.dependencyInjector = dependencyInjector
         let navigationController = UINavigationController()
         navigationController.view.backgroundColor = .white
         super.init(navigationController: navigationController)
@@ -25,7 +28,12 @@ public final class AppCoordinator: NavigationCoordinator {
     
     public override func start() {
         window.rootViewController = navigationController
-        let chatCoordinator = ChatCoordinator(navigationController: navigationController)
+        
+        let chatCoordinator = ChatCoordinator(
+            navigationController: navigationController,
+            dependencyInjector: dependencyInjector
+        )
+        
         addChild(chatCoordinator)
         chatCoordinator.start()
         window.makeKeyAndVisible()

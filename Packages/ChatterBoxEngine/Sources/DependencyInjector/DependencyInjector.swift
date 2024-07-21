@@ -27,7 +27,7 @@ extension DependencyResolving {
 }
 
 public protocol Assembly {
-    func assemble(dependencyResolving: DependencyResolving)
+    func assemble(resolver: DependencyResolving)
 }
 
 public final class DependencyInjector: DependencyResolving {
@@ -41,13 +41,15 @@ public final class DependencyInjector: DependencyResolving {
         let factory: (DependencyResolving, Param) -> T
     }
     
-    private let lock = NSLock()
+    private let lock = NSRecursiveLock()
     private var transientProviders: [ObjectIdentifier: Any] = [:]
     private var singletonInstances: [ObjectIdentifier: Any] = [:]
     private var weaklyHeldInstances: [ObjectIdentifier: WeakReference<AnyObject>] = [:]
     
-    func setupAssemblies(_ assemblies: [Assembly]) {
-        assemblies.forEach { $0.assemble(dependencyResolving: self) }
+    public init() {}
+    
+    public func setupAssemblies(_ assemblies: [Assembly]) {
+        assemblies.forEach { $0.assemble(resolver: self) }
     }
     
     public func registerDependency<T>(type: T.Type, scope: ResolutionScope, factory: @escaping (DependencyResolving) -> T) {

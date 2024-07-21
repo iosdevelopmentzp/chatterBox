@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "Core", targets: ["Core"]),
         .library(name: "CoreDataPersistents", targets: ["CoreDataPersistents"]),
         .library(name: "DependencyInjector", targets: ["DependencyInjector"]),
+        .library(name: "MainAssembly", targets: ["MainAssembly"]),
         
         // services
         
@@ -29,24 +30,40 @@ let package = Package(
     ],
     targets: [
         .target(name: "Coordinators", dependencies: [
-            "Scenes_Chat"
+            "Scenes_Chat",
+            "DependencyInjector"
         ]),
         
         .target(name: "Core"),
         
-        .target(name: "CoreDataPersistents"),
+        .target(name: "CoreDataPersistents", dependencies: ["DependencyInjector"]),
         
         .target(name: "DependencyInjector"),
         
-        .target(name: "CoreStorageService"),
+        .target(name: "MainAssembly", dependencies: [
+            "CoreDataPersistents",
+            "DependencyInjector",
+            "CoreStorageService",
+            "UseCases",
+            "StorageServices"
+        ]),
         
-        .target(name: "StorageServices", dependencies: ["Core"]),
+        // services
+        
+        .target(name: "CoreStorageService", dependencies: ["DependencyInjector"]),
+        
+        .target(name: "StorageServices", dependencies: [
+            "Core",
+            "DependencyInjector",
+            "CoreStorageService"
+        ]),
         
         .target(name: "Scenes_Chat"),
         
         .target(name: "UseCases", dependencies: [
             "StorageServices",
-            "Core"
+            "Core",
+            "DependencyInjector"
         ]),
         
         .testTarget(name: "ChatterBoxEngineTests", dependencies: []),

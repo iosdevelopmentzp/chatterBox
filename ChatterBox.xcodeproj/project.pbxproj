@@ -14,6 +14,8 @@
 		2335A1532C4BB3310064ED8A /* ChatterBoxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1522C4BB3310064ED8A /* ChatterBoxUITests.swift */; };
 		2335A1552C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2335A1542C4BB3310064ED8A /* ChatterBoxUITestsLaunchTests.swift */; };
 		2335A1642C4BC1200064ED8A /* Coordinators in Frameworks */ = {isa = PBXBuildFile; productRef = 2335A1632C4BC1200064ED8A /* Coordinators */; };
+		2388D2732C4D6A3A00AAA7FE /* DependencyInjector in Frameworks */ = {isa = PBXBuildFile; productRef = 2388D2722C4D6A3A00AAA7FE /* DependencyInjector */; };
+		2388D2752C4D6A3F00AAA7FE /* MainAssembly in Frameworks */ = {isa = PBXBuildFile; productRef = 2388D2742C4D6A3F00AAA7FE /* MainAssembly */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,6 +55,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2335A1642C4BC1200064ED8A /* Coordinators in Frameworks */,
+				2388D2752C4D6A3F00AAA7FE /* MainAssembly in Frameworks */,
+				2388D2732C4D6A3A00AAA7FE /* DependencyInjector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +152,8 @@
 			name = ChatterBox;
 			packageProductDependencies = (
 				2335A1632C4BC1200064ED8A /* Coordinators */,
+				2388D2722C4D6A3A00AAA7FE /* DependencyInjector */,
+				2388D2742C4D6A3F00AAA7FE /* MainAssembly */,
 			);
 			productName = ChatterBox;
 			productReference = 2335A12E2C4BB32E0064ED8A /* ChatterBox.app */;
@@ -599,6 +605,14 @@
 		2335A1632C4BC1200064ED8A /* Coordinators */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Coordinators;
+		};
+		2388D2722C4D6A3A00AAA7FE /* DependencyInjector */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DependencyInjector;
+		};
+		2388D2742C4D6A3F00AAA7FE /* MainAssembly */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MainAssembly;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

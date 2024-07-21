@@ -8,11 +8,7 @@
 import Foundation
 import CoreData
 
-public protocol PersistentContainerFactoryProtocol {
-    func makeChatterBoxPersistentContainer() -> NSPersistentContainer
-}
-
-public final class PersistentContainerFactory: PersistentContainerFactoryProtocol {
+final class PersistentContainerFactory {
     private lazy var chatterBoxPersistentContainer: NSPersistentContainer = {
         let modelName = "ChatterBox"
         let bundle = Bundle.module
@@ -28,9 +24,7 @@ public final class PersistentContainerFactory: PersistentContainerFactoryProtoco
         return container
     }()
     
-    public init() {}
-    
-    public func makeChatterBoxPersistentContainer() -> NSPersistentContainer {
+    func makeChatterBoxPersistentContainer() -> NSPersistentContainer {
         self.chatterBoxPersistentContainer
     }
 }

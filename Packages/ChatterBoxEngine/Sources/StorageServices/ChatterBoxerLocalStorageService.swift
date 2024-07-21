@@ -9,6 +9,7 @@ import Foundation
 import CoreData
 import Core
 import Combine
+import CoreStorageService
 
 public protocol ChatterBoxerLocalStorageServiceProtocol {
     func saveConversation(_ conversation: Conversation)
@@ -22,10 +23,14 @@ public protocol ChatterBoxerLocalStorageServiceProtocol {
 }
 
 final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProtocol {
-    private let mainContext: NSManagedObjectContext
+    private let storageService: ChatterBoxCoreStorageServiceProtocol
     
-    init(mainContext: NSManagedObjectContext) {
-        self.mainContext = mainContext
+    private var mainContext: NSManagedObjectContext {
+        storageService.viewContext
+    }
+    
+    init(storageService: ChatterBoxCoreStorageServiceProtocol) {
+        self.storageService = storageService
     }
     
     // MARK: - ChatterBoxerLocalStorageServiceProtocol

@@ -7,6 +7,8 @@
 
 import UIKit
 import Coordinators
+import DependencyInjector
+import MainAssembly
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -19,7 +21,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
         
-        appCoordinator = AppCoordinator(window: window)
+        let dependencyInjector = DependencyInjector()
+        let mainAssembly = MainAssembly()
+        dependencyInjector.setupAssemblies([mainAssembly])
+        
+        appCoordinator = AppCoordinator(window: window, dependencyInjector: dependencyInjector)
         
         appCoordinator?.start()
     }

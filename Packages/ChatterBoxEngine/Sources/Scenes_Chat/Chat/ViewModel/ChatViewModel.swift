@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UseCases
 
 private struct ChatViewModelContext {
     var inputText: String
@@ -19,6 +20,8 @@ public class ChatViewModel {
     
     // MARK: - Private properties
     
+    private let userUseCase: UserUseCaseProtocol
+    private let chatUseCase: ChatUseCaseProtocol
     private var context = ChatViewModelContext(inputText: "")
     
     private static let messageCellModels: [MessageTextCellModel] = [
@@ -40,7 +43,13 @@ public class ChatViewModel {
         MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true)
     ]
     
-    public init() {
+    public init(
+        userUseCase: UserUseCaseProtocol,
+        chatUseCase: ChatUseCaseProtocol
+    ) {
+        self.userUseCase = userUseCase
+        self.chatUseCase = chatUseCase
+        
         let rowItems = Self.messageCellModels.map({ ChatViewSection.RowItem.textMessage($0) })
         self.state = .init(
             navigationTitle: "Chat",
