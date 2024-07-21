@@ -15,7 +15,8 @@ let package = Package(
         
         // services
         
-        
+        .library(name: "CoreStorageService", targets: ["CoreStorageService"]),
+        .library(name: "StorageServices", targets: ["StorageServices"]),
         
         // scenes
         
@@ -29,6 +30,10 @@ let package = Package(
         .target(name: "Core"),
         
         .target(name: "CoreDataPersistents"),
+        
+        .target(name: "CoreStorageService"),
+        
+        .target(name: "StorageServices", dependencies: ["Core"]),
         
         .target(name: "Scenes_Chat"),
         

@@ -1,8 +1,8 @@
 //
-//  User+CoreDataProperties.swift
+//  UserEntity+CoreDataProperties.swift
 //  ChatterBox
 //
-//  Created by Dmytro Vorko on 20/07/2024.
+//  Created by Dmytro Vorko on 21/07/2024.
 //
 //
 
@@ -10,10 +10,10 @@ import Foundation
 import CoreData
 
 
-extension User {
+extension UserEntity {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<User> {
-        return NSFetchRequest<User>(entityName: "User")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<UserEntity> {
+        return NSFetchRequest<UserEntity>(entityName: "UserEntity")
     }
 
     @NSManaged public var userID: String?
@@ -24,13 +24,13 @@ extension User {
 }
 
 // MARK: Generated accessors for conversations
-extension User {
+extension UserEntity {
 
     @objc(addConversationsObject:)
-    @NSManaged public func addToConversations(_ value: Conversation)
+    @NSManaged public func addToConversations(_ value: ConversationEntity)
 
     @objc(removeConversationsObject:)
-    @NSManaged public func removeFromConversations(_ value: Conversation)
+    @NSManaged public func removeFromConversations(_ value: ConversationEntity)
 
     @objc(addConversations:)
     @NSManaged public func addToConversations(_ values: NSSet)
@@ -41,22 +41,18 @@ extension User {
 }
 
 // MARK: Generated accessors for messages
-extension User {
+extension UserEntity {
 
     @objc(addMessagesObject:)
-    @NSManaged public func addToMessages(_ value: Message)
+    @NSManaged public func addToMessages(_ value: MessageEntity)
 
     @objc(removeMessagesObject:)
-    @NSManaged public func removeFromMessages(_ value: Message)
+    @NSManaged public func removeFromMessages(_ value: MessageEntity)
 
     @objc(addMessages:)
     @NSManaged public func addToMessages(_ values: NSSet)
 
     @objc(removeMessages:)
     @NSManaged public func removeFromMessages(_ values: NSSet)
-
-}
-
-extension User : Identifiable {
 
 }
