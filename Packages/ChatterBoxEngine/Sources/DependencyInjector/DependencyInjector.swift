@@ -15,7 +15,9 @@ public enum ResolutionScope {
 
 public protocol DependencyResolving {
     func resolveDependency<T>() -> T
+    func resolveDependency<T, Params>(type: T.Type, parameters: Params) -> T
     func registerDependency<T>(type: T.Type, scope: ResolutionScope, factory: @escaping (DependencyResolving) -> T)
+    func registerDependency<T, Params>(type: T.Type, scope: ResolutionScope, factory: @escaping (DependencyResolving, Params) -> T)
 }
 
 extension DependencyResolving {
@@ -32,6 +34,11 @@ public final class DependencyInjector: DependencyResolving {
     private struct DependencyProvider<T> {
         let scope: ResolutionScope
         let factory: (DependencyResolving) -> T
+    }
+    
+    private struct ParameterizedProvider<T, Param> {
+        let scope: ResolutionScope
+        let factory: (DependencyResolving, Param) -> T
     }
     
     private let lock = NSLock()
@@ -51,6 +58,45 @@ public final class DependencyInjector: DependencyResolving {
         transientProviders[String(describing: T.self)] = dependencyProvider
     }
     
+    public func registerDependency<T, Params>(type: T.Type, scope: ResolutionScope, factory: @escaping (DependencyResolving, Params) -> T) {
+        lock.lock()
+        defer { lock.unlock() }
+        let provider = ParameterizedProvider(scope: scope, factory: factory)
+        transientProviders[String(describing: T.self)] = provider
+    }
+    
+    public func resolveDependency<T, Params>(type: T.Type, parameters: Params) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        let typeName = String(describing: T.self)
+        
+        let dependencyProvider = transientProviders[typeName]
+        
+        guard let dependencyProvider = dependencyProvider as? ParameterizedProvider<T, Params> else {
+            fatalError("The resolver for type \(T.self) has not been registered")
+        }
+        
+        switch dependencyProvider.scope {
+        case .transient:
+            return dependencyProvider.factory(self, parameters)
+            
+        case .singleton:
+            if let singletonInstance = singletonInstances[typeName] as? T {
+                return singletonInstance
+            } else {
+                let instance = dependencyProvider.factory(self, parameters)
+                singletonInstances[String(describing: T.self)] = instance
+                return instance
+            }
+            
+        case .weak:
+            let instance = dependencyProvider.factory(self, parameters)
+            let weakReference = WeakReference(value: instance as AnyObject)
+            weaklyHeldInstances[typeName] = weakReference
+            return instance
+        }
+    }
+    
     public func resolveDependency<T>() -> T {
         lock.lock()
         defer { lock.unlock() }
@@ -67,14 +113,13 @@ public final class DependencyInjector: DependencyResolving {
             return dependencyProvider.factory(self)
             
         case .singleton:
-            return {
-                guard let permanentInstance = singletonInstances[typeName] as? T else {
-                    let instance = dependencyProvider.factory(self)
-                    singletonInstances[String(describing: T.self)] = instance
-                    return instance
-                }
-                return permanentInstance
-            }()
+            if let singletonInstance = singletonInstances[typeName] as? T {
+                return singletonInstance
+            } else {
+                let instance = dependencyProvider.factory(self)
+                singletonInstances[String(describing: T.self)] = instance
+                return instance
+            }
             
         case .weak:
             if let instance = self.weaklyHeldInstances[typeName]?.value as? T {
