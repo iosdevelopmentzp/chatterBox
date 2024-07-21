@@ -19,7 +19,7 @@ public protocol DependencyResolving {
 }
 
 extension DependencyResolving {
-    func registerDependency<T>(type: T.Type, scope: ResolutionScope, factory: @escaping (DependencyResolving) -> T) {
+    func registerDependency<T>(type: T.Type, factory: @escaping (DependencyResolving) -> T) {
         registerDependency(type: type, scope: .transient, factory: factory)
     }
 }
@@ -35,9 +35,9 @@ public final class DependencyInjector: DependencyResolving {
     }
     
     private let lock = NSLock()
-    private var dependencyProviders: [String: Any] = [:]
-    private var strongInstanceReferences: [String: Any] = [:]
-    private var weakInstanceReferences: [String: WeakReference<AnyObject>] = [:]
+    private var transientProviders: [String: Any] = [:]
+    private var singletonInstances: [String: Any] = [:]
+    private var weaklyHeldInstances: [String: WeakReference<AnyObject>] = [:]
     
     func setupAssemblies(_ assemblies: [Assembly]) {
         assemblies.forEach { $0.assemble(dependencyResolving: self) }
@@ -48,7 +48,7 @@ public final class DependencyInjector: DependencyResolving {
         defer { lock.unlock() }
         
         let dependencyProvider = DependencyProvider(scope: scope, factory: factory)
-        dependencyProviders[String(describing: T.self)] = dependencyProvider
+        transientProviders[String(describing: T.self)] = dependencyProvider
     }
     
     public func resolveDependency<T>() -> T {
@@ -56,7 +56,7 @@ public final class DependencyInjector: DependencyResolving {
         defer { lock.unlock() }
         let typeName = String(describing: T.self)
         
-        let dependencyProvider = dependencyProviders[typeName]
+        let dependencyProvider = transientProviders[typeName]
         
         guard let dependencyProvider = dependencyProvider as? DependencyProvider<T> else {
             fatalError("The resolver for type \(T.self) has not been registered")
@@ -68,21 +68,21 @@ public final class DependencyInjector: DependencyResolving {
             
         case .singleton:
             return {
-                guard let permanentInstance = strongInstanceReferences[typeName] as? T else {
+                guard let permanentInstance = singletonInstances[typeName] as? T else {
                     let instance = dependencyProvider.factory(self)
-                    strongInstanceReferences[String(describing: T.self)] = instance
+                    singletonInstances[String(describing: T.self)] = instance
                     return instance
                 }
                 return permanentInstance
             }()
             
         case .weak:
-            if let instance = self.weakInstanceReferences[typeName]?.value as? T {
+            if let instance = self.weaklyHeldInstances[typeName]?.value as? T {
                 return instance
             } else {
                 let instance = dependencyProvider.factory(self)
                 let weakReference = WeakReference(value: instance as AnyObject)
-                weakInstanceReferences[typeName] = weakReference
+                weaklyHeldInstances[typeName] = weakReference
                 return instance
                 
             }
