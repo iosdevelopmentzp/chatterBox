@@ -10,6 +10,7 @@ import Foundation
 public enum ResolutionScope {
     case transient
     case singleton
+    case weak
 }
 
 public protocol DependencyResolving {
@@ -35,7 +36,8 @@ public final class DependencyInjector: DependencyResolving {
     
     private let lock = NSLock()
     private var dependencyProviders: [String: Any] = [:]
-    private var permanentInstances: [String: Any] = [:]
+    private var strongInstanceReferences: [String: Any] = [:]
+    private var weakInstanceReferences: [String: WeakReference<AnyObject>] = [:]
     
     func setupAssemblies(_ assemblies: [Assembly]) {
         assemblies.forEach { $0.assemble(dependencyResolving: self) }
@@ -52,8 +54,9 @@ public final class DependencyInjector: DependencyResolving {
     public func resolveDependency<T>() -> T {
         lock.lock()
         defer { lock.unlock() }
+        let typeName = String(describing: T.self)
         
-        let dependencyProvider = dependencyProviders[String(describing: T.self)]
+        let dependencyProvider = dependencyProviders[typeName]
         
         guard let dependencyProvider = dependencyProvider as? DependencyProvider<T> else {
             fatalError("The resolver for type \(T.self) has not been registered")
@@ -65,13 +68,31 @@ public final class DependencyInjector: DependencyResolving {
             
         case .singleton:
             return {
-                guard let permanentInstance = permanentInstances[String(describing: T.self)] as? T else {
+                guard let permanentInstance = strongInstanceReferences[typeName] as? T else {
                     let instance = dependencyProvider.factory(self)
-                    permanentInstances[String(describing: T.self)] = instance
+                    strongInstanceReferences[String(describing: T.self)] = instance
                     return instance
                 }
                 return permanentInstance
             }()
+            
+        case .weak:
+            if let instance = self.weakInstanceReferences[typeName]?.value as? T {
+                return instance
+            } else {
+                let instance = dependencyProvider.factory(self)
+                let weakReference = WeakReference(value: instance as AnyObject)
+                weakInstanceReferences[typeName] = weakReference
+                return instance
+                
+            }
         }
+    }
+}
+
+private class WeakReference<T: AnyObject> {
+    weak var value: T?
+    init(value: T) {
+        self.value = value
     }
 }
