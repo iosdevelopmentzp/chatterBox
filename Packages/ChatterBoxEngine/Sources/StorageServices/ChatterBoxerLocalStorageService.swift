@@ -13,6 +13,7 @@ import CoreStorageService
 
 public protocol ChatterBoxerLocalStorageServiceProtocol {
     func saveConversation(_ conversation: Conversation)
+    func getConversations(userID: String) -> [Conversation]
     
     func getUser(id: String) -> User?
     func saveUser(_ user: User)
@@ -48,7 +49,14 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
             
             let participants: [UserEntity] = fetchUsers(withConversationID: conversation.id)
             conversationEntity.participants = Set(participants)
+            
+            self.saveContext()
         }
+    }
+    
+    func getConversations(userID: String) -> [Conversation] {
+        let conversations = self.fetchConversations(withParticipantID: userID)
+        return conversations.map(Conversation.init(entity:))
     }
     
     func getUser(id: String) -> User? {
@@ -72,13 +80,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
             userEntity.messages = Set(messages)
             let conversations: [ConversationEntity] = self.fetchConversations(withParticipantID: user.id)
             userEntity.conversations = Set(conversations)
-            
-            do {
-                try mainContext.save()
-            } catch let error as NSError {
-                // Handle any errors appropriately
-                debugPrint("Error saving message: \(error), \(error.userInfo)")
-            }
+            self.saveContext()
         }
     }
     
@@ -104,12 +106,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                 )
             }
             
-            do {
-                try mainContext.save()
-            } catch let error as NSError {
-                // Handle any errors appropriately
-                debugPrint("Error saving message: \(error), \(error.userInfo)")
-            }
+            self.saveContext()
         }
     }
     
@@ -118,12 +115,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
             if let messageEntity = fetchUniqueEntityById(idKey: #keyPath(MessageEntity.messageID), id: message.id) {
                 mainContext.delete(messageEntity)
                 
-                do {
-                    try mainContext.save()
-                } catch let error as NSError {
-                    // Handle any errors appropriately
-                    debugPrint("Error deleting message: \(error), \(error.userInfo)")
-                }
+                self.saveContext()
             } else {
                 debugPrint("Failed to find message with ID \(message.id) to delete.")
             }
@@ -204,6 +196,16 @@ extension ChatterBoxerLocalStorageService {
             return nil
         }
     }
+    
+    private func saveContext() {
+        guard self.mainContext.hasChanges else { return }
+        do {
+            try mainContext.save()
+        } catch let error as NSError {
+            // Handle any errors appropriately
+            debugPrint("Error saving message: \(error), \(error.userInfo)")
+        }
+    }
 }
 
 private extension Message {
@@ -222,5 +224,18 @@ private extension Message {
 private extension User {
     init(entity: UserEntity) {
         self = .init(id: entity.userID ?? "", username: entity.username ?? "")
+    }
+}
+
+private extension Conversation {
+    init(entity: ConversationEntity) {
+        self = .init(
+            id: entity.conversationID ?? "",
+            participantsID: entity.participants?.compactMap { $0.userID } ?? [],
+            messages: entity.messages?.map { Message(entity: $0) } ?? [],
+            title: entity.title,
+            lastMessage: entity.lastMessage,
+            lastMessageTime: entity.lastMessageTime
+        )
     }
 }

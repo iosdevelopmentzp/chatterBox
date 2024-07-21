@@ -11,7 +11,8 @@ import StorageServices
 import Combine
 
 public protocol ChatUseCaseProtocol {
-    func saveConversation(_ conversation: Conversation)
+    func createConversation(title: String?, participantsID: [String])
+    func getConversations(userID: String) -> [Conversation]
     
     func saveMessage(text: String, conversation: Conversation, senderID: String?)
     func deleteMessage(message: Message)
@@ -27,7 +28,19 @@ final class ChatUseCase: ChatUseCaseProtocol {
     
     // MARK: - ChatUseCaseProtocol
     
-    func saveConversation(_ conversation: Conversation) {
+    func getConversations(userID: String) -> [Conversation] {
+        storageService.getConversations(userID: userID)
+    }
+    
+    func createConversation(title: String?, participantsID: [String]) {
+        let conversation = Conversation(
+            id: UUID().uuidString,
+            participantsID: participantsID,
+            messages: [],
+            title: title, 
+            lastMessage: nil,
+            lastMessageTime: nil
+        )
         storageService.saveConversation(conversation)
     }
     

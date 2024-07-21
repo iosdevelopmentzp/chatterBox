@@ -7,10 +7,11 @@
 
 import Foundation
 import UseCases
+import Core
+import Combine
 
 private struct ChatViewModelContext {
     var inputText: String
-    var newRowItem: ChatViewSection.RowItem?
 }
 
 public class ChatViewModel {
@@ -24,24 +25,44 @@ public class ChatViewModel {
     private let chatUseCase: ChatUseCaseProtocol
     private var context = ChatViewModelContext(inputText: "")
     
-    private static let messageCellModels: [MessageTextCellModel] = [
-        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true)
-    ]
+    // Ideally, this value should be injected externally. However, for this test application, we are generating a new conversation directly here if none exist.
+    private lazy var conversation: Conversation = {
+        let currentUser = self.userUseCase.getCurrentUser()
+        var userConversations = self.chatUseCase.getConversations(userID: currentUser.id)
+        
+        if userConversations.isEmpty {
+            self.chatUseCase.createConversation(title: "New chat", participantsID: [currentUser.id])
+            userConversations = self.chatUseCase.getConversations(userID: currentUser.id)
+        }
+        
+        guard let conversation = userConversations.first else {
+            fatalError("At this point conversation must be created")
+        }
+        return conversation
+    }()
+    
+    private var currentUser: User {
+        self.userUseCase.getCurrentUser()
+    }
+    
+//    private static let messageCellModels: [MessageTextCellModel] = [
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
+//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true)
+//    ]
     
     public init(
         userUseCase: UserUseCaseProtocol,
@@ -50,10 +71,9 @@ public class ChatViewModel {
         self.userUseCase = userUseCase
         self.chatUseCase = chatUseCase
         
-        let rowItems = Self.messageCellModels.map({ ChatViewSection.RowItem.textMessage($0) })
         self.state = .init(
             navigationTitle: "Chat",
-            sections: [.init(type: .main, items: rowItems)],
+            sections: [.init(type: .main, items: [])],
             composerViewModel: .init(text: "")
         )
     }
@@ -65,10 +85,9 @@ public class ChatViewModel {
         guard !messageText.isEmpty else {
             return
         }
-        context.newRowItem = .textMessage(
-            .init(id: String(UUID().hashValue), message: messageText, isOutput: true)
-        )
+        self.context.inputText = ""
         self.refreshState()
+        self.chatUseCase.saveMessage(text: messageText, conversation: conversation, senderID: self.currentUser.id)
     }
     
     func didChangeText(_ text: String) {
@@ -76,27 +95,53 @@ public class ChatViewModel {
         refreshState()
     }
     
+    // MARK: - Output
+    
+    func setupObservers(cancellations: inout Set<AnyCancellable>
+    ) {
+        self.chatUseCase
+            .messagesPublisher(conversationID: self.conversation.id)
+            .receive(on: RunLoop.main)
+            .removeDuplicates()
+            .sink { [weak self] messages in
+                self?.refreshState(newMessages: messages)
+            }
+            .store(in: &cancellations)
+    }
+    
     // MARK: - Private
     
-    private func refreshState() {
-        self.state = Self.makeState(self.state, context: &self.context)
+    private func refreshState(newMessages: [Message]? = nil) {
+        self.state = Self.makeState(self.state, context: &self.context, messages: newMessages)
     }
     
     // MARK: - State Factory
     
     private static func makeState(
         _ previousState: ChatViewState?,
-        context: inout ChatViewModelContext
+        context: inout ChatViewModelContext,
+        messages: [Message]?
     ) -> ChatViewState {
-        let previousRows = (previousState?.sections ?? []).flatMap(\.items)
-        let newRows = context.newRowItem.map { [$0] } ?? []
-        context.newRowItem = nil
+        let rows: [ChatViewSection.RowItem]? = messages?.compactMap({ message -> ChatViewSection.RowItem? in
+            switch message.type {
+            case .text:
+                return .textMessage(.init(id: message.id, message: message.content, isOutput: true))
+            case .image:
+                return .images(urls: [message.content])
+            case .unknown:
+                return nil
+            }
+        })
         
-        if !newRows.isEmpty {
-            context.inputText = ""
+        let newRows: [ChatViewSection.RowItem]
+        
+        if let rows {
+            newRows = rows
+        } else {
+            newRows = (previousState?.sections ?? []).flatMap(\.items)
         }
         
-        let newSection = ChatViewSection(type: .main, items: newRows + previousRows)
+        let newSection = ChatViewSection(type: .main, items: newRows)
         
         return .init(
             navigationTitle: "Chat",

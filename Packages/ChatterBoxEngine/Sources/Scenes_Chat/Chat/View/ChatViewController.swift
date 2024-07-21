@@ -153,6 +153,8 @@ public final class ChatViewController: UIViewController {
                 self?.messageComposerView.configure(model: composerViewModel)
             }
             .store(in: &subscriptions)
+        
+        self.viewModel.setupObservers(cancellations: &self.subscriptions)
     }
 
     // MARK: - User Interactions

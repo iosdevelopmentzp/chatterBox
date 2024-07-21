@@ -58,7 +58,10 @@ let package = Package(
             "CoreStorageService"
         ]),
         
-        .target(name: "Scenes_Chat"),
+        .target(name: "Scenes_Chat", dependencies: [
+            "Core",
+            "UseCases"
+        ]),
         
         .target(name: "UseCases", dependencies: [
             "StorageServices",

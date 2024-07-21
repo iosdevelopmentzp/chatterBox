@@ -10,13 +10,14 @@ import Core
 import StorageServices
 
 public protocol UserUseCaseProtocol {
-    func createCurrentUser(username: String)
-    func getCurrentUser() -> User?
+    func getCurrentUser() -> User
     func createUser(userName: String)
 }
 
 final class UserUseCase: UserUseCaseProtocol {
     private let storage: ChatterBoxerLocalStorageServiceProtocol
+    // Currently using a direct reference to UserDefaults for simplicity. For better modularity and testability, consider implementing a dedicated UserDefaultsStorageService.
+    private let userDefaults = UserDefaults(suiteName: "ChatterBox")
     
     init(storage: ChatterBoxerLocalStorageServiceProtocol) {
         self.storage = storage
@@ -24,23 +25,34 @@ final class UserUseCase: UserUseCaseProtocol {
     
     // MARK: - UserUseCaseProtocol
     
-    func createCurrentUser(username: String) {
-        let id = String(UUID().hashValue)
-        // TODO: - keep current user ID to UserDefaults
-        let user = User(id: id, username: username)
-        self.storage.saveUser(user)
-    }
-    
-    func getCurrentUser() -> User? {
-        #warning("Implement correct current user ID handling")
-        // TODO: - get current user id in UserDefaults
-        let id = "currentUserID"
-        return storage.getUser(id: id)
+    func getCurrentUser() -> User {
+        let user: User
+        if let currentUserID = self.userDefaults?.currentUserID, let storageUser = storage.getUser(id: currentUserID) {
+            user = storageUser
+        } else {
+            let id = String(UUID().hashValue)
+            user = User(id: id, username: "User_\(id)")
+            self.userDefaults?.currentUserID = id
+            self.storage.saveUser(user)
+        }
+        return user
     }
     
     func createUser(userName: String) {
         let id = String(UUID().hashValue)
         let user = User(id: id, username: userName)
         self.storage.saveUser(user)
+    }
+}
+
+private extension UserDefaults {
+    var currentUserID: String? {
+        get {
+            self.string(forKey: "currentUserID")
+        }
+        
+        set {
+            self.setValue(newValue, forKey: "currentUserID")
+        }
     }
 }
