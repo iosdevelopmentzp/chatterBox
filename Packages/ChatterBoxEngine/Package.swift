@@ -18,6 +18,10 @@ let package = Package(
         .library(name: "CoreStorageService", targets: ["CoreStorageService"]),
         .library(name: "StorageServices", targets: ["StorageServices"]),
         
+        // use cases
+        
+        .library(name: "UseCases", targets: ["UseCases"]),
+        
         // scenes
         
         .library(name: "Scenes_Chat", targets: ["Scenes_Chat"])
@@ -36,6 +40,11 @@ let package = Package(
         .target(name: "StorageServices", dependencies: ["Core"]),
         
         .target(name: "Scenes_Chat"),
+        
+        .target(name: "UseCases", dependencies: [
+            "StorageServices",
+            "Core"
+        ]),
         
         .testTarget(name: "ChatterBoxEngineTests", dependencies: []),
     ]
