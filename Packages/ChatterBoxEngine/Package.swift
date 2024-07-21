@@ -12,6 +12,7 @@ let package = Package(
         .library(name: "Coordinators", targets: ["Coordinators"]),
         .library(name: "Core", targets: ["Core"]),
         .library(name: "CoreDataPersistents", targets: ["CoreDataPersistents"]),
+        .library(name: "DependencyInjector", targets: ["DependencyInjector"]),
         
         // services
         
@@ -34,6 +35,8 @@ let package = Package(
         .target(name: "Core"),
         
         .target(name: "CoreDataPersistents"),
+        
+        .target(name: "DependencyInjector"),
         
         .target(name: "CoreStorageService"),
         
