@@ -7,12 +7,12 @@
 
 import UIKit
 
-protocol ImageCacheKitProtocol {
+public protocol ImageCacherProtocol {
     func saveImageToDisk(_ image: UIImage) async throws -> URL?
     func getImages(from urls: [URL]) async -> [URL : UIImage]
 }
 
-final class ImageCacheKit: ImageCacheKitProtocol {
+final class ImageCacheKit: ImageCacherProtocol {
     enum CacheError: Error {
         case errorSavingFile(Error)
         case didntFindUrlPath

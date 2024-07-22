@@ -11,7 +11,7 @@ public final class ImageCacheKitAssembly: Assembly {
     public init() {}
     
     public func assemble(resolver: any DependencyResolving) {
-        resolver.registerDependency(type: ImageCacheKitProtocol.self, scope: .singleton) { _ in
+        resolver.registerDependency(type: ImageCacherProtocol.self, scope: .singleton) { _ in
             ImageCacheKit()
         }
     }
