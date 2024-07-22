@@ -119,7 +119,6 @@ public final class ChatViewController: UIViewController {
     }
     
     private func setupViews() {
-        collectionView.delegate = self
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
         // Apply a vertical flip transform to the collection view
         collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
@@ -170,6 +169,10 @@ public final class ChatViewController: UIViewController {
     // MARK: - User Interactions
     
     func setupUserInteractions() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        collectionView.addGestureRecognizer(tapGesture)
+        
         messageComposerView.onEvent = { [weak self] event in
             switch event {
             case .didTapSendButton:
@@ -179,6 +182,10 @@ public final class ChatViewController: UIViewController {
                 self?.viewModel.didChangeText(text)
             }
         }
+    }
+    
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     // MARK: - Keyboard Notifications
@@ -249,13 +256,5 @@ public final class ChatViewController: UIViewController {
         case .images:
             fatalError("Images handling not implemented")
         }
-    }
-}
-
-// MARK: -  UICollectionViewDelegate
-
-extension ChatViewController: UICollectionViewDelegate {
-    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        // TODO: - Add logic if keyboard must get hidden at some point
     }
 }
