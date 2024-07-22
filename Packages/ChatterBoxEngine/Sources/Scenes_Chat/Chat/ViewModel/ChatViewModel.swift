@@ -55,7 +55,8 @@ public class ChatViewModel {
         self.state = .init(
             navigationTitle: "Chat",
             sections: [.init(type: .main, items: [])],
-            composerViewModel: .init(text: "")
+            composerViewModel: .init(text: ""),
+            containsNewMessages: false
         )
     }
     
@@ -128,11 +129,12 @@ public class ChatViewModel {
         })
         
         let newMessages: [ChatViewSection.MessageItem]
+        let previousMessages = (previousState?.sections ?? []).flatMap(\.items)
         
         if let messages {
             newMessages = messages
         } else {
-            newMessages = (previousState?.sections ?? []).flatMap(\.items)
+            newMessages = previousMessages
         }
         
         let newSection = ChatViewSection(type: .main, items: newMessages)
@@ -140,7 +142,8 @@ public class ChatViewModel {
         return .init(
             navigationTitle: "Chat",
             sections: [newSection],
-            composerViewModel: .init(text: context.inputText)
+            composerViewModel: .init(text: context.inputText),
+            containsNewMessages: newMessages.first != previousMessages.first
         )
     }
 }

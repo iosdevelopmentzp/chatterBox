@@ -40,6 +40,7 @@ struct ChatViewState: Hashable {
     let navigationTitle: String
     let sections: [ChatViewSection]
     let composerViewModel: MessageComposerViewModel
+    let containsNewMessages: Bool
 }
 
 public final class ChatViewController: UIViewController {
@@ -127,39 +128,10 @@ public final class ChatViewController: UIViewController {
     // MARK: - Binding
     
     private func bindViewModel() {
-        let statePublisher = viewModel.$state
-            .receive(on: RunLoop.main)
-            .share()
-
-        // Bind navigation title updates
-        statePublisher
-            .map { $0.navigationTitle }
+        viewModel.$state
             .removeDuplicates()
-            .sink { [weak self] title in
-                self?.navigationItem.title = title
-            }
-            .store(in: &subscriptions)
-
-        // Bind messages updates
-        statePublisher
-            .map { $0.sections }
-            .removeDuplicates()
-            .sink { [weak self] sections in
-                var snapshot = Snapshot()
-                snapshot.appendSections(sections.map(\.type))
-                sections.forEach { section in
-                    snapshot.appendItems(section.items, toSection: section.type)
-                    self?.dataSource.apply(snapshot, animatingDifferences: true)
-                }
-            }
-            .store(in: &subscriptions)
-
-        // Bind composer view model updates
-        statePublisher
-            .map { $0.composerViewModel }
-            .removeDuplicates()
-            .sink { [weak self] composerViewModel in
-                self?.messageComposerView.configure(model: composerViewModel)
+            .sink { [weak self] state in
+                self?.refreshView(state: state)
             }
             .store(in: &subscriptions)
         
@@ -220,6 +192,27 @@ public final class ChatViewController: UIViewController {
     
     // MARK: - Private Functions
     
+    private func refreshView(state: ChatViewState) {
+        /* navigation title */
+        navigationItem.title = state.navigationTitle
+        
+        /* snapshot */
+        var snapshot = Snapshot()
+        snapshot.appendSections(state.sections.map(\.type))
+        state.sections.forEach { section in
+            snapshot.appendItems(section.items, toSection: section.type)
+            self.dataSource.apply(snapshot, animatingDifferences: true)
+        }
+        
+        /* messageComposerView */
+        self.messageComposerView.configure(model: state.composerViewModel)
+        
+        /* scrollToBTop */
+        if state.containsNewMessages {
+            self.collectionView.scrollToTop(animated: true)
+        }
+    }
+    
     private func createLayout() -> UICollectionViewLayout {
         UICollectionViewCompositionalLayout {
             sectionIndex,
@@ -256,5 +249,26 @@ public final class ChatViewController: UIViewController {
         case .images:
             fatalError("Images handling not implemented")
         }
+    }
+}
+
+// TODO: - move to the Extensions package
+extension UICollectionView {
+    func scrollToTop(animated: Bool) {
+        guard self.numberOfSections > 0 else {
+            return
+        }
+        
+        let firstSection = 0
+        let firstItemIndex = 0
+        
+        // Check if there are items in the first section
+        guard self.numberOfItems(inSection: firstSection) > 0 else {
+            return
+        }
+        
+        let indexPath = IndexPath(item: firstItemIndex, section: firstSection)
+        
+        self.scrollToItem(at: indexPath, at: .top, animated: animated)
     }
 }
