@@ -15,7 +15,7 @@ public protocol ChatUseCaseProtocol {
     func getConversations(userID: String) -> [Conversation]
     
     func saveMessage(text: String, conversation: Conversation, senderID: String?)
-    func deleteMessage(message: Message)
+    func deleteMessage(id: String)
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never>
 }
 
@@ -57,8 +57,8 @@ final class ChatUseCase: ChatUseCaseProtocol {
         self.storageService.saveMessage(message)
     }
     
-    func deleteMessage(message: Message) {
-        self.storageService.deleteMessage(message)
+    func deleteMessage(id: String) {
+        self.storageService.deleteMessage(id: id)
     }
     
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never> {

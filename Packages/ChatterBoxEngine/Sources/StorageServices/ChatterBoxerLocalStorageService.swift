@@ -19,7 +19,7 @@ public protocol ChatterBoxerLocalStorageServiceProtocol {
     func saveUser(_ user: User)
     
     func saveMessage(_ message: Message)
-    func deleteMessage(_ message: Message)
+    func deleteMessage(id: String)
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never>
 }
 
@@ -123,18 +123,18 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
         }
     }
     
-    func deleteMessage(_ message: Message) {
+    func deleteMessage(id: String) {
         mainContext.performAndWait {
             do {
-                if let messageEntity = try fetchEntity(by: #keyPath(MessageEntity.messageID), withID: message.id) {
+                if let messageEntity = try fetchEntity(by: #keyPath(MessageEntity.messageID), withID: id) {
                     mainContext.delete(messageEntity)
                     
                     self.saveContext()
                 } else {
-                    debugPrint("Failed delete message action. Message was not find. message with ID \(message.id) ")
+                    debugPrint("Failed delete message action. Message was not find. message with ID \(id) ")
                 }
             } catch {
-                debugPrint("Failed to find message with ID \(message.id) to delete.")
+                debugPrint("Failed to find message with ID \(id) to delete.")
             }
         }
     }

@@ -8,6 +8,10 @@
 import UIKit
 import Combine
 
+enum MenuInteractionAction {
+    case delete
+}
+
 struct ChatViewSection: Hashable {
     // MARK: - Nested
     
@@ -15,15 +19,21 @@ struct ChatViewSection: Hashable {
         case main
     }
     
-    enum RowItem: Hashable {
-        case textMessage(MessageTextCellModel)
-        case images(urls: [String])
+    struct MessageItem: Hashable {
+        enum Content: Hashable {
+            case textMessage(MessageTextCellModel)
+            case images(urls: [String])
+        }
+        
+        let id: String
+        let content: Content
+        let menuActions: [MenuInteractionAction]
     }
     
     // MARK: - Proeprties
     
     let type: SectionType
-    let items: [RowItem]
+    let items: [MessageItem]
 }
 
 struct ChatViewState: Hashable {
@@ -35,15 +45,15 @@ struct ChatViewState: Hashable {
 public final class ChatViewController: UIViewController {
     // MARK: - Nested
     
-    private typealias DataSource = UICollectionViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.RowItem>
-    private typealias Snapshot = NSDiffableDataSourceSnapshot<ChatViewSection.SectionType, ChatViewSection.RowItem>
+    private typealias DataSource = UICollectionViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.MessageItem>
+    private typealias Snapshot = NSDiffableDataSourceSnapshot<ChatViewSection.SectionType, ChatViewSection.MessageItem>
     
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
     
     private lazy var dataSource = DataSource(collectionView: collectionView) { [weak self] in
-        self?.cell(for: $1, item: $2)
+        self?.cell(for: $1, message: $2)
     }
     
     private var subscriptions = Set<AnyCancellable>()
@@ -223,12 +233,16 @@ public final class ChatViewController: UIViewController {
         }
     }
     
-    private func cell(for indexPath: IndexPath, item: ChatViewSection.RowItem) -> UICollectionViewCell {
+    private func cell(for indexPath: IndexPath, message: ChatViewSection.MessageItem) -> UICollectionViewCell {
         let identifier = String(describing: MessageTextCell.self)
-        switch item {
+        switch message.content {
         case .textMessage(let model):
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
             cell.configure(model: model)
+            cell.setupMenuInteractions(message.menuActions)
+            cell.onInteractionAction = { [weak self] in
+                self?.viewModel.handleMenuInteraction(action: $0, messageID: message.id)
+            }
             // Apply a vertical flip transform to the cell
             cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
             return cell

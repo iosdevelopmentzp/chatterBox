@@ -45,25 +45,6 @@ public class ChatViewModel {
         self.userUseCase.getCurrentUser()
     }
     
-//    private static let messageCellModels: [MessageTextCellModel] = [
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "First message", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Second message", isOutput: false),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Jdfjsdfd sjfkh klsajasdk aslkfhaksdjasklfh askdjasklfh ajdaskfjklaaskdjaskl adfajsdkasklfajs fkasjdkas jf", isOutput: true),
-//        MessageTextCellModel(id: String(UUID().hashValue), message: "Kdskfjalksjd askjfiefjohyqwg qw duqw dqwhdqwtfra dqz drtqz cfrqacxzrtqcxcq txcqrtx cqrxc qrtx ctqxv", isOutput: true)
-//    ]
-    
     public init(
         userUseCase: UserUseCaseProtocol,
         chatUseCase: ChatUseCaseProtocol
@@ -95,6 +76,10 @@ public class ChatViewModel {
         refreshState()
     }
     
+    func handleMenuInteraction(action: MenuInteractionAction, messageID: String) {
+        self.chatUseCase.deleteMessage(id: messageID)
+    }
+    
     // MARK: - Output
     
     func setupObservers(cancellations: inout Set<AnyCancellable>) {
@@ -121,26 +106,36 @@ public class ChatViewModel {
         context: inout ChatViewModelContext,
         messages: [Message]?
     ) -> ChatViewState {
-        let rows: [ChatViewSection.RowItem]? = messages?.compactMap({ message -> ChatViewSection.RowItem? in
+        let messages: [ChatViewSection.MessageItem]? = messages?.compactMap({
+            message -> ChatViewSection.MessageItem? in
+            let content: ChatViewSection.MessageItem.Content?
             switch message.type {
             case .text:
-                return .textMessage(.init(id: message.id, message: message.content, isOutput: true))
+                content = .textMessage(.init(
+                    id: message.id,
+                    message: message.content,
+                    isOutput: true
+                ))
             case .image:
-                return .images(urls: [message.content])
+                content = .images(urls: [message.content])
             case .unknown:
-                return nil
+                content = nil
             }
+            
+            guard let content else { return nil }
+            
+            return .init(id: message.id, content: content, menuActions: [.delete])
         })
         
-        let newRows: [ChatViewSection.RowItem]
+        let newMessages: [ChatViewSection.MessageItem]
         
-        if let rows {
-            newRows = rows
+        if let messages {
+            newMessages = messages
         } else {
-            newRows = (previousState?.sections ?? []).flatMap(\.items)
+            newMessages = (previousState?.sections ?? []).flatMap(\.items)
         }
         
-        let newSection = ChatViewSection(type: .main, items: newRows)
+        let newSection = ChatViewSection(type: .main, items: newMessages)
         
         return .init(
             navigationTitle: "Chat",

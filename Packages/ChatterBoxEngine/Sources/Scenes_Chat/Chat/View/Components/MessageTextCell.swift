@@ -7,6 +7,29 @@
 
 import UIKit
 
+extension MenuInteractionAction {
+    var title: String {
+        switch self {
+        case .delete:
+            return "Delete"
+        }
+    }
+    
+    var imageName: String? {
+        switch self {
+        case .delete:
+            return "trash"
+        }
+    }
+    
+    var attributes: UIMenuElement.Attributes {
+        switch self {
+        case .delete:
+            return .destructive
+        }
+    }
+}
+
 final class MessageTextCell: UICollectionViewCell {
     // MARK: - UI Components
     
@@ -16,6 +39,10 @@ final class MessageTextCell: UICollectionViewCell {
     
     private let outputMessageBackground = UIColor.blue
     private let inputMessageBackground = UIColor.lightGray
+    
+    private var interactionsItems: [MenuInteractionAction] = []
+    
+    var onInteractionAction: ((MenuInteractionAction) -> Void)?
     
     // MARK: - Constructor
     
@@ -73,7 +100,7 @@ final class MessageTextCell: UICollectionViewCell {
         maxWidthConstraint.isActive = true
     }
     
-    func updateUI(isOutputMessage: Bool) {
+    private func updateUI(isOutputMessage: Bool) {
         let transform: CGAffineTransform
         let backgroundColor: UIColor
 
@@ -95,5 +122,42 @@ final class MessageTextCell: UICollectionViewCell {
     func configure(model: MessageTextCellModel) {
         self.textLabel.text = model.message
         updateUI(isOutputMessage: model.isOutput)
+    }
+    
+    func setupMenuInteractions(_ actions: [MenuInteractionAction]) {
+        self.interactionsItems = actions
+        
+        if actions.isEmpty, !self.messageContainer.interactions.isEmpty {
+            interactions.forEach {
+                self.removeInteraction($0)
+            }
+        }
+        
+        guard !actions.isEmpty, self.messageContainer.interactions.isEmpty else {
+            return
+        }
+        
+        let interaction = UIContextMenuInteraction(delegate: self)
+        self.messageContainer.addInteraction(interaction)
+    }
+}
+
+extension MessageTextCell: UIContextMenuInteractionDelegate {
+    
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+            let actions = self.interactionsItems.map { interactionItem -> UIAction in
+                UIAction(
+                    title: interactionItem.title,
+                    image: interactionItem.imageName.flatMap { UIImage(systemName: $0) },
+                    attributes: interactionItem.attributes,
+                    handler: { [weak self] _ in
+                        self?.onInteractionAction?(interactionItem)
+                    }
+                )
+            }
+            
+            return UIMenu(title: "", children: actions)
+        }
     }
 }
