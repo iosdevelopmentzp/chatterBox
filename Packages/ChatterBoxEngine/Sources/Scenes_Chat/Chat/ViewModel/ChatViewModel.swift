@@ -97,7 +97,7 @@ public class ChatViewModel {
     // MARK: - Private
     
     private func refreshState(newMessages: [Message]? = nil) {
-        self.state = Self.makeState(self.state, context: &self.context, messages: newMessages)
+        self.state = Self.makeState(self.state, context: &self.context, messages: newMessages, conversation: conversation)
     }
     
     // MARK: - State Factory
@@ -105,7 +105,8 @@ public class ChatViewModel {
     private static func makeState(
         _ previousState: ChatViewState?,
         context: inout ChatViewModelContext,
-        messages: [Message]?
+        messages: [Message]?,
+        conversation: Conversation
     ) -> ChatViewState {
         let messages: [ChatViewSection.MessageItem]? = messages?.compactMap({
             message -> ChatViewSection.MessageItem? in
@@ -140,7 +141,7 @@ public class ChatViewModel {
         let newSection = ChatViewSection(type: .main, items: newMessages)
         
         return .init(
-            navigationTitle: "Chat",
+            navigationTitle: conversation.title ?? "Chat",
             sections: [newSection],
             composerViewModel: .init(text: context.inputText),
             containsNewMessages: newMessages.first != previousMessages.first
