@@ -27,7 +27,8 @@ let package = Package(
         
         // scenes
         
-        .library(name: "Scenes_Chat", targets: ["Scenes_Chat"])
+        .library(name: "Scenes_Chat", targets: ["Scenes_Chat"]),
+        .library(name: "Scenes_ImageConfirmation", targets: ["Scenes_ImageConfirmation"])
     ],
     targets: [
         .target(name: "Coordinators", dependencies: [
@@ -77,6 +78,8 @@ let package = Package(
             "UseCases"
         ]),
         
+        .target(name: "Scenes_ImageConfirmation", dependencies: []),
+    
         .testTarget(name: "ChatterBoxEngineTests", dependencies: []),
     ]
 )
