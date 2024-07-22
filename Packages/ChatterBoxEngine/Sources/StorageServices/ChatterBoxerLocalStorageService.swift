@@ -48,7 +48,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                 let relatedMessages: [MessageEntity] = try self.fetchEntities(by: #keyPath(MessageEntity.conversation.conversationID), withID: conversation.id)
                 conversationEntity.messages = Set(relatedMessages)
                 
-                let participants: [UserEntity] = try fetchEntities(by: #keyPath(UserEntity.userID), withIDs: conversation.participantsID)
+                let participants: [UserEntity] = try fetchEntities(type: UserEntity.self, where: #keyPath(UserEntity.userID), isIn: conversation.participantsID)
                 conversationEntity.participants = Set(participants)
                 
                 self.saveContext()
@@ -68,7 +68,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
         var user: User? = nil
         mainContext.performAndWait {
             do {
-                guard let userEntity: UserEntity = try self.fetchEntity(by: #keyPath(UserEntity.userID), withID: id) else {
+                guard let userEntity = try self.fetchEntity(type: UserEntity.self, where: #keyPath(UserEntity.userID), equal: id) else {
                     return
                 }
                 
@@ -108,11 +108,11 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                 messageEntity.timestamp = message.timestamp
                 
                 if let senderID = message.senderID {
-                    messageEntity.sender = try self.fetchEntity(by: #keyPath(UserEntity.userID), withID: senderID)
+                    messageEntity.sender = try self.fetchEntity(type: UserEntity.self, where: #keyPath(UserEntity.userID), equal: senderID)
                 }
                 
                 if let conversationID = message.conversationID {
-                    messageEntity.conversation =  try self.fetchEntity(by: #keyPath(ConversationEntity.conversationID), withID: conversationID)
+                    messageEntity.conversation =  try self.fetchEntity(type: ConversationEntity.self, where: #keyPath(ConversationEntity.conversationID), equal: conversationID)
                 }
                 
                 self.saveContext()
@@ -126,7 +126,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     func deleteMessage(id: String) {
         mainContext.performAndWait {
             do {
-                if let messageEntity = try fetchEntity(by: #keyPath(MessageEntity.messageID), withID: id) {
+                if let messageEntity = try fetchEntity(type: MessageEntity.self, where: #keyPath(MessageEntity.messageID), equal: id) {
                     mainContext.delete(messageEntity)
                     
                     self.saveContext()
@@ -195,15 +195,15 @@ extension ChatterBoxerLocalStorageService {
         return try mainContext.fetch(fetchRequest)
     }
 
-    private func fetchEntities<T: NSManagedObject>(by keyPath: String, withIDs ids: [String]) throws -> [T] {
+    private func fetchEntities<T: NSManagedObject>(type: T.Type, where keyPath: String, isIn values: [String]) throws -> [T] {
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
-        fetchRequest.predicate = NSPredicate(format: "%K IN %@", keyPath, ids)
+        fetchRequest.predicate = NSPredicate(format: "%K IN %@", keyPath, values)
         return try mainContext.fetch(fetchRequest)
     }
     
-    private func fetchEntity<T: NSManagedObject>(by keyPath: String, withID id: String) throws -> T? {
+    private func fetchEntity<T: NSManagedObject>(type: T.Type, where keyPath: String, equal value: String) throws -> T? {
         let fetchRequest = NSFetchRequest<T>(entityName: String(describing: T.self))
-        fetchRequest.predicate = NSPredicate(format: "%K == %@", keyPath, id)
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", keyPath, value)
         fetchRequest.fetchLimit = 1
         return try mainContext.fetch(fetchRequest).first
     }
