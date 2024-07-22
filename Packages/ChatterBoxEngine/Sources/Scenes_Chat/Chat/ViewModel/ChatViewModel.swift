@@ -63,7 +63,7 @@ public class ChatViewModel {
     // MARK: - Input
     
     func didTapSendButton() {
-        let messageText = self.context.inputText
+        let messageText = self.context.inputText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !messageText.isEmpty else {
             return
         }
