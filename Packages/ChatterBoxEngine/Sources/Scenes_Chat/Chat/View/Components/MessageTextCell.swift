@@ -37,7 +37,7 @@ final class MessageTextCell: UICollectionViewCell {
     private let textLabel = UILabel(frame: .zero)
     private let messageContainer = UIView()
     
-    private let outputMessageBackground = UIColor.blue
+    private let outputMessageBackground = UIColor(red: 0.67, green: 0.88, blue: 0.69, alpha: 1.0)
     private let inputMessageBackground = UIColor.lightGray
     
     private var interactionsItems: [MenuInteractionAction] = []
