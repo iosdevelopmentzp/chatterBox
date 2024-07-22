@@ -21,6 +21,7 @@ public class ChatViewModel {
     
     // MARK: - Private properties
     
+    private weak var sceneDelegate: ChatSceneDelegate?
     private let userUseCase: UserUseCaseProtocol
     private let chatUseCase: ChatUseCaseProtocol
     private var context = ChatViewModelContext(inputText: "")
@@ -47,10 +48,12 @@ public class ChatViewModel {
     
     public init(
         userUseCase: UserUseCaseProtocol,
-        chatUseCase: ChatUseCaseProtocol
+        chatUseCase: ChatUseCaseProtocol,
+        sceneDelegate: ChatSceneDelegate?
     ) {
         self.userUseCase = userUseCase
         self.chatUseCase = chatUseCase
+        self.sceneDelegate = sceneDelegate
         
         self.state = .init(
             navigationTitle: "Chat",

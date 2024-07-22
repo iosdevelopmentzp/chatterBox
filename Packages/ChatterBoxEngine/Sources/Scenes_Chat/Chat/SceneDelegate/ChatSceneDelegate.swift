@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol ChatSceneDelegate: AnyObject {
-    
+    func didTapAttachImages(completion: @escaping ([String]) -> Void)
 }

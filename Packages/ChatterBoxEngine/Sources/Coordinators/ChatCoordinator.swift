@@ -20,10 +20,23 @@ final class ChatCoordinator: NavigationCoordinator {
     override func start() {
         let viewModel = ChatViewModel(
             userUseCase: dependencyInjector.resolveDependency(),
-            chatUseCase: dependencyInjector.resolveDependency()
+            chatUseCase: dependencyInjector.resolveDependency(),
+            sceneDelegate: self
         )
         
         let viewController = ChatViewController(viewModel: viewModel)
         navigationController.pushViewController(viewController, animated: true)
+    }
+}
+
+extension ChatCoordinator: ChatSceneDelegate {
+    func didTapAttachImages(completion: @escaping ([String]) -> Void) {
+        let coordinator = ImagePickerCoordinator(
+            navigationController: self.navigationController,
+            dependencyInjector: self.dependencyInjector,
+            completion: completion
+        )
+        addChild(coordinator)
+        coordinator.start()
     }
 }
