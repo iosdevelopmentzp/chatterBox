@@ -14,7 +14,7 @@ public protocol ChatUseCaseProtocol {
     func createConversation(title: String?, participantsID: [String])
     func getConversations(userID: String) -> [Conversation]
     
-    func saveMessage(text: String, conversation: Conversation, senderID: String?)
+    func saveMessage(content: Message.Content, conversation: Conversation, senderID: String?) 
     func deleteMessage(id: String)
     func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never>
 }
@@ -44,13 +44,27 @@ final class ChatUseCase: ChatUseCaseProtocol {
         storageService.saveConversation(conversation)
     }
     
-    func saveMessage(text: String, conversation: Conversation, senderID: String?) {
+    func saveMessage(content: Message.Content, conversation: Conversation, senderID: String?) {
+        let type: Message.MessageType = {
+            if !(content.text ?? "").isEmpty {
+                return .text
+            } else if !(content.imageURLs ?? []).isEmpty {
+                return .image
+            } else {
+                return .unknown
+            }
+        }()
+        
+        guard type != .unknown else {
+            return
+        }
+        
         let message = Message(
             id: String(UUID().hashValue),
-            type: .text,
+            type: type,
             conversationID: conversation.id,
             senderID: senderID,
-            content: text,
+            content: content,
             timestamp: Date()
         )
         

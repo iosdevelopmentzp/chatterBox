@@ -8,6 +8,16 @@
 import Foundation
 
 public struct Message: Equatable {
+    public struct Content: Equatable {
+        public let text: String?
+        public let imageURLs: [String]?
+        
+        public init(text: String?, imageURLs: [String]?) {
+            self.text = text
+            self.imageURLs = imageURLs
+        }
+    }
+    
     public enum MessageType: String {
         case text
         case image
@@ -18,7 +28,7 @@ public struct Message: Equatable {
     public let conversationID: String?
     public let type: MessageType
     public let senderID: String?
-    public let content: String
+    public let content: Content
     public let timestamp: Date
     
     public init(
@@ -26,7 +36,7 @@ public struct Message: Equatable {
         type: Message.MessageType,
         conversationID: String?,
         senderID: String?,
-        content: String,
+        content: Message.Content,
         timestamp: Date
     ) {
         self.id = id

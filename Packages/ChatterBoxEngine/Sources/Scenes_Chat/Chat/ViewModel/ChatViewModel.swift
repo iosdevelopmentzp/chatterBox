@@ -72,7 +72,9 @@ public class ChatViewModel {
         }
         self.context.inputText = ""
         self.refreshState()
-        self.chatUseCase.saveMessage(text: messageText, conversation: conversation, senderID: self.currentUser.id)
+        
+        let content = Message.Content(text: messageText, imageURLs: nil)
+        self.chatUseCase.saveMessage(content: content, conversation: conversation, senderID: self.currentUser.id)
     }
     
     func didTapAttachButton() {
@@ -124,11 +126,11 @@ public class ChatViewModel {
             case .text:
                 content = .textMessage(.init(
                     id: message.id,
-                    message: message.content,
+                    message: message.content.text ?? "",
                     isOutput: true
                 ))
             case .image:
-                content = .images(urls: [message.content])
+                content = .images(urls: message.content.imageURLs ?? [])
             case .unknown:
                 content = nil
             }

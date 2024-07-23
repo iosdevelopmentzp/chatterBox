@@ -104,7 +104,15 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                 let messageEntity = MessageEntity(context: self.mainContext)
                 messageEntity.messageID = message.id
                 messageEntity.type = message.type.rawValue
-                messageEntity.content = message.content
+                let content = MessageContentEntity(context: self.mainContext)
+                content.text = message.content.text
+                let imagesArray = message.content.imageURLs?.map { urlString -> ImageEntity in
+                    let imageEntity = ImageEntity(context: self.mainContext)
+                    imageEntity.url = urlString
+                    return imageEntity
+                }
+                content.images = imagesArray.map { Set($0) }
+                messageEntity.content = content
                 messageEntity.timestamp = message.timestamp
                 
                 if let senderID = message.senderID {
@@ -221,12 +229,17 @@ extension ChatterBoxerLocalStorageService {
 
 private extension Message {
     init(entity: MessageEntity) {
+        let content = Message.Content(
+            text: entity.content?.text,
+            imageURLs: entity.content?.images?.compactMap { $0.url }
+        )
+        
         self = .init(
             id: entity.messageID ?? "",
             type: entity.type.flatMap { MessageType(rawValue: $0) } ?? .unknown,
             conversationID: entity.conversation?.conversationID,
             senderID: entity.sender?.userID,
-            content: entity.content ?? "",
+            content: content,
             timestamp: entity.timestamp ?? Date()
         )
     }

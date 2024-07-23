@@ -2,7 +2,7 @@
 //  MessageEntity+CoreDataProperties.swift
 //  ChatterBox
 //
-//  Created by Dmytro Vorko on 21/07/2024.
+//  Created by Dmytro Vorko on 23/07/2024.
 //
 //
 
@@ -16,11 +16,11 @@ extension MessageEntity {
         return NSFetchRequest<MessageEntity>(entityName: "MessageEntity")
     }
 
-    @NSManaged public var content: String?
     @NSManaged public var messageID: String?
     @NSManaged public var timestamp: Date?
     @NSManaged public var type: String?
     @NSManaged public var conversation: ConversationEntity?
     @NSManaged public var sender: UserEntity?
+    @NSManaged public var content: MessageContentEntity?
 
 }
