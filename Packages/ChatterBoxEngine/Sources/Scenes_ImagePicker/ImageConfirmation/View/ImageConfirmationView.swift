@@ -35,7 +35,7 @@ struct ImageConfirmationView: View {
             
             HStack {
                 Button(action: {
-                    // TODO: - handle cancel button
+                    self.viewModel.didTapCancel()
                 }) {
                     Image(systemName: "xmark.circle.fill")
                         .imageScale(.large)
@@ -46,7 +46,7 @@ struct ImageConfirmationView: View {
                 Spacer()
                 
                 Button(action: {
-                    // Implement send action
+                    self.viewModel.ddTapConfirm()
                 }) {
                     Image(systemName: "paperplane.fill")
                         .imageScale(.large)

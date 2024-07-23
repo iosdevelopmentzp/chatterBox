@@ -27,12 +27,15 @@ final class ImagePickerCoordinator: NavigationCoordinator {
     }
     
     private func handleResults(_ results: [PHPickerResult]) {
-        var selectedImages: [UIImage] = []
         let itemProviders = results.map(\.itemProvider)
+        var selectedImages: [UIImage] = []
+        let group = DispatchGroup()
+
         for itemProvider in itemProviders where itemProvider.canLoadObject(ofClass: UIImage.self) {
+            group.enter()
             itemProvider.loadObject(ofClass: UIImage.self) { image, error in
+                defer { group.leave() }  // Ensure that leave is called in all paths
                 if let image = image as? UIImage {
-                    // Use the image for your purposes
                     selectedImages.append(image)
                 } else if let error = error {
                     print("Error loading image: \(error.localizedDescription)")
@@ -40,12 +43,15 @@ final class ImagePickerCoordinator: NavigationCoordinator {
             }
         }
         
-        guard selectedImages.count > 0 else {
-            self.childDidFinish(self)
-            return
+        group.notify(queue: .main) { [weak self] in
+            guard !selectedImages.isEmpty else {
+                guard let self = self else { return }
+                self.childDidFinish(self)
+                return
+            }
+            
+            self?.presentImageConfirmationView(images: selectedImages)
         }
-        
-        self.presentImageConfirmationView(images: selectedImages)
     }
     
     private func presentImageConfirmationView(images: [UIImage]) {
@@ -82,7 +88,12 @@ extension ImagePickerCoordinator: PHPickerViewControllerDelegate {
 
 extension ImagePickerCoordinator: ImageConfirmationDelegate {
     func didTapCancel() {
-        self.presentImagePicker()
+        if let presented = self.navigationController.presentedViewController {
+            presented.dismiss(animated: true, completion: {
+                self.presentImagePicker()
+            })
+        }
+        
     }
     
     func didConfirm(urls: [String]) {

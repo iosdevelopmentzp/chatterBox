@@ -150,6 +150,9 @@ public final class ChatViewController: UIViewController {
             case .didTapSendButton:
                 self?.viewModel.didTapSendButton()
                 
+            case .didTapAttachButton:
+                self?.viewModel.didTapAttachButton()
+                
             case .textDidChange(let text):
                 self?.viewModel.didChangeText(text)
             }

@@ -7,11 +7,12 @@
 
 import UIKit
 
-class MessageComposerView: UIView {
+final class MessageComposerView: UIView {
     // MARK: - Nested
     
     enum Event {
         case didTapSendButton
+        case didTapAttachButton
         case textDidChange(String)
     }
     
@@ -20,6 +21,7 @@ class MessageComposerView: UIView {
     private let stackView = UIStackView(frame: .zero)
     private let textField = UITextField(frame: .zero)
     private let sendButton = UIButton(type: .system)
+    private let attachButton = UIButton(type: .system)
     private let topSeparator = UIView(frame: .zero)
     private let bottomSeparator = UIView(frame: .zero)
     
@@ -46,7 +48,9 @@ class MessageComposerView: UIView {
         addSubview(topSeparator)
         addSubview(stackView)
         addSubview(bottomSeparator)
+        
         stackView.addArrangedSubview(textField)
+        stackView.addArrangedSubview(attachButton)
         stackView.addArrangedSubview(sendButton)
         
         stackView.axis = .horizontal
@@ -54,7 +58,11 @@ class MessageComposerView: UIView {
         
         backgroundColor = .white
         
-        sendButton.setTitle("Send", for: .normal)
+        sendButton.setImage(UIImage(systemName: "paperplane.fill"), for: .normal)
+        attachButton.setImage(UIImage(systemName: "paperclip"), for: .normal)
+        sendButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 22, weight: .medium), forImageIn: .normal)
+        attachButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 22, weight: .medium), forImageIn: .normal)
+
         updateSendButtonState(animated: false)
         
         topSeparator.backgroundColor = .separator
@@ -87,11 +95,14 @@ class MessageComposerView: UIView {
         ])
         
         sendButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        attachButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
     }
     
     private func setupComponentsUserInteractions() {
         textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         sendButton.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
+        attachButton.addTarget(self, action: #selector(attachButtonTapped), for: .touchUpInside)
     }
     
     // MARK: - User Interaction
@@ -103,6 +114,10 @@ class MessageComposerView: UIView {
     
     @objc private func sendButtonTapped() {
         self.onEvent?(.didTapSendButton)
+    }
+    
+    @objc private func attachButtonTapped() {
+        self.onEvent?(.didTapAttachButton)
     }
     
     // MARK: - Configure

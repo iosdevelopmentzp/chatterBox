@@ -75,6 +75,12 @@ public class ChatViewModel {
         self.chatUseCase.saveMessage(text: messageText, conversation: conversation, senderID: self.currentUser.id)
     }
     
+    func didTapAttachButton() {
+        self.sceneDelegate?.didTapAttachImages(completion: { urlImages in
+            // TODO: - send images message
+        })
+    }
+    
     func didChangeText(_ text: String) {
         context.inputText = text
         refreshState()

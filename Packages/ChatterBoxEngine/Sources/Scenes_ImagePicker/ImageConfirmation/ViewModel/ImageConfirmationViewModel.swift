@@ -19,4 +19,12 @@ public class ImageConfirmationViewModel: ObservableObject {
         self.sceneDelegate = sceneDelegate
         self.imageCacher = imageCacher
     }
+    
+    func ddTapConfirm() {
+        self.sceneDelegate?.didConfirm(urls: [])
+    }
+    
+    func didTapCancel() {
+        self.sceneDelegate?.didTapCancel()
+    }
 }
