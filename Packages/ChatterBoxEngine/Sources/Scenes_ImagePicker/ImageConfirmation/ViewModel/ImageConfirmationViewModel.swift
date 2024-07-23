@@ -14,14 +14,32 @@ public class ImageConfirmationViewModel: ObservableObject {
     
     private weak var sceneDelegate: ImageConfirmationDelegate?
     
+    private var task: Task<(), Never>? {
+        willSet { task?.cancel() }
+    }
+    
     public init(images: [UIImage], sceneDelegate: ImageConfirmationDelegate?, imageCacher: ImageCacherProtocol) {
         self.images = images
         self.sceneDelegate = sceneDelegate
         self.imageCacher = imageCacher
     }
     
-    func ddTapConfirm() {
-        self.sceneDelegate?.didConfirm(urls: [])
+    func didTapConfirm() {
+        guard task == nil else {
+            return
+        }
+        self.task = Task { [weak self] in
+            var urls: [URL] = []
+            for image in self?.images ?? [] {
+                if let url = try? await self?.imageCacher.saveImageToDisk(image) {
+                    urls.append(url)
+                }
+            }
+            let urlStrings = urls.map { $0.absoluteString }
+            DispatchQueue.main.async { [weak self] in
+                self?.sceneDelegate?.didConfirm(urls: urlStrings)
+            }
+        }
     }
     
     func didTapCancel() {

@@ -12,6 +12,7 @@ import PhotosUI
 
 final class ImagePickerCoordinator: NavigationCoordinator {
     private let dependencyInjector: DependencyInjector
+    private let completion: ([String]) -> Void
     
     init(
         navigationController: UINavigationController,
@@ -19,6 +20,7 @@ final class ImagePickerCoordinator: NavigationCoordinator {
         completion: @escaping ([String]) -> Void
     ) {
         self.dependencyInjector = dependencyInjector
+        self.completion = completion
         super.init(navigationController: navigationController)
     }
     
@@ -97,10 +99,19 @@ extension ImagePickerCoordinator: ImageConfirmationDelegate {
     }
     
     func didConfirm(urls: [String]) {
-        if let presented = self.navigationController.presentedViewController {
-            presented.dismiss(animated: true, completion: {
-                self.childDidFinish(self)
-            })
+        let completion = { [weak self] in
+            self?.completion(urls)
+            self.map { $0.childDidFinish($0) }
+        }
+        
+        guard let presented = self.navigationController.presentedViewController else {
+            assertionFailure("Unexpected case")
+            completion()
+            return
+        }
+        
+        presented.dismiss(animated: true) {
+            completion()
         }
     }
 }

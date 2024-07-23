@@ -79,7 +79,9 @@ final class ImageCacheKit: ImageCacherProtocol {
                 return cachedImage
             }
             
-            if let imageData = try? Data(contentsOf: url), let image = UIImage(data: imageData) {
+            // Resolve the potentially new path before fetching the image
+            let resolvedURL = self.resolveURL(url)
+            if let imageData = try? Data(contentsOf: resolvedURL), let image = UIImage(data: imageData) {
                 self.cache.setObject(image, forKey: url as NSURL)
                 return image
             }
@@ -87,4 +89,22 @@ final class ImageCacheKit: ImageCacherProtocol {
             return nil
         }
     }
+}
+
+private extension ImageCacheKit {
+    private func resolveURL(_ url: URL) -> URL {
+        // Reconstructs the file URL to adapt to changes in the app's document directory path between app launches,
+        // a common occurrence during development installs. This dynamic resolution ensures consistent file access
+        // across different sessions by appending the original file's last path component to the current document directory.
+
+        // Fetch the current document directory.
+        guard let documentDirectory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) else {
+            // If the directory can't be accessed, return the original URL as a fallback.
+            return url
+        }
+        
+        // Return a new URL combining the current document directory with the original file's last component.
+        return documentDirectory.appendingPathComponent(url.lastPathComponent)
+    }
+
 }

@@ -46,7 +46,7 @@ struct ImageConfirmationView: View {
                 Spacer()
                 
                 Button(action: {
-                    self.viewModel.ddTapConfirm()
+                    self.viewModel.didTapConfirm()
                 }) {
                     Image(systemName: "paperplane.fill")
                         .imageScale(.large)
