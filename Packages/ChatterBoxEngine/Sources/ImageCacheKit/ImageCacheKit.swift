@@ -9,6 +9,7 @@ import UIKit
 
 public protocol ImageCacherProtocol {
     func saveImageToDisk(_ image: UIImage) async throws -> URL?
+    func getImage(from url: URL) async -> UIImage?
     func getImages(from urls: [URL]) async -> [URL : UIImage]
 }
 

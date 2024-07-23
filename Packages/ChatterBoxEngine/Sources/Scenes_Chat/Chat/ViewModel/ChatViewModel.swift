@@ -9,6 +9,7 @@ import Foundation
 import UseCases
 import Core
 import Combine
+import ImageCacheKit
 
 private struct ChatViewModelContext {
     var inputText: String
@@ -18,6 +19,7 @@ public class ChatViewModel {
     // MARK: - Properties
     
     @Published private(set) var state: ChatViewState
+    let imageCacher: ImageCacherProtocol
     
     // MARK: - Private properties
     
@@ -49,10 +51,12 @@ public class ChatViewModel {
     public init(
         userUseCase: UserUseCaseProtocol,
         chatUseCase: ChatUseCaseProtocol,
+        imageCacher: ImageCacherProtocol,
         sceneDelegate: ChatSceneDelegate?
     ) {
         self.userUseCase = userUseCase
         self.chatUseCase = chatUseCase
+        self.imageCacher = imageCacher
         self.sceneDelegate = sceneDelegate
         
         self.state = .init(
@@ -78,8 +82,13 @@ public class ChatViewModel {
     }
     
     func didTapAttachButton() {
-        self.sceneDelegate?.didTapAttachImages(completion: { urlImages in
-            // TODO: - send images message
+        self.sceneDelegate?.didTapAttachImages(completion: { [weak self] urlImages in
+            guard !urlImages.isEmpty, let self else { return }
+            self.chatUseCase.saveMessage(
+                content: .init(text: nil, imageURLs: urlImages),
+                conversation: self.conversation,
+                senderID: self.currentUser.id
+            )
         })
     }
     
@@ -130,7 +139,11 @@ public class ChatViewModel {
                     isOutput: true
                 ))
             case .image:
-                content = .images(urls: message.content.imageURLs ?? [])
+                content = .images(model: .init(
+                    id: message.id,
+                    imageURLs: message.content.imageURLs ?? [],
+                    isOutput: true
+                ))
             case .unknown:
                 content = nil
             }

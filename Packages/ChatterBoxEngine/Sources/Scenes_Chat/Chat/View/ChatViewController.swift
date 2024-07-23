@@ -22,7 +22,7 @@ struct ChatViewSection: Hashable {
     struct MessageItem: Hashable {
         enum Content: Hashable {
             case textMessage(MessageTextCellModel)
-            case images(urls: [String])
+            case images(model: MessageImageCellModel)
         }
         
         let id: String
@@ -121,6 +121,7 @@ public final class ChatViewController: UIViewController {
     
     private func setupViews() {
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
+        collectionView.register(MessageImagesCell.self, forCellWithReuseIdentifier: String(describing: MessageImagesCell.self))
         // Apply a vertical flip transform to the collection view
         collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
     }
@@ -249,8 +250,11 @@ public final class ChatViewController: UIViewController {
             // Apply a vertical flip transform to the cell
             cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
             return cell
-        case .images:
-            fatalError("Images handling not implemented")
+        case .images(let model):
+            let identifier = String(describing: MessageImagesCell.self)
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageImagesCell
+            cell.configure(with: model, imageCacher: viewModel.imageCacher)
+            return cell
         }
     }
 }

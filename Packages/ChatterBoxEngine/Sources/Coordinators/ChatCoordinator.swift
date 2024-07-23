@@ -21,6 +21,7 @@ final class ChatCoordinator: NavigationCoordinator {
         let viewModel = ChatViewModel(
             userUseCase: dependencyInjector.resolveDependency(),
             chatUseCase: dependencyInjector.resolveDependency(),
+            imageCacher: self.dependencyInjector.resolveDependency(),
             sceneDelegate: self
         )
         

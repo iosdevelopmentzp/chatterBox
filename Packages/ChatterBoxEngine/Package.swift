@@ -76,7 +76,8 @@ let package = Package(
     
         .target(name: "Scenes_Chat", dependencies: [
             "Core",
-            "UseCases"
+            "UseCases",
+            "ImageCacheKit"
         ]),
         
         .target(name: "Scenes_ImagePicker", dependencies: [
