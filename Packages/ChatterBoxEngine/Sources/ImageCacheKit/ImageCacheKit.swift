@@ -14,26 +14,32 @@ public protocol ImageCacherProtocol {
 }
 
 final class ImageCacheKit: ImageCacherProtocol {
+    // MARK: - Nested
     enum CacheError: Error {
         case errorSavingFile(Error)
         case didntFindUrlPath
     }
     
+    // MARK: - Properties
+    
     private let fileManager = FileManager.default
-    
-    private let cache: NSCache<NSURL, UIImage> = {
-        let cache = NSCache<NSURL, UIImage>()
-        cache.countLimit = 50
-        // set 100 mb limit
-        cache.totalCostLimit = 100 * 1024 * 1024
-        return cache
-    }()
-    
-    private let queue = DispatchQueue(label: "ChatterBoxEngine.ImagesManager.queue")
+    private let _cache = NSCache<NSURL, UIImage>()
+    private let cacheAccessQueue = DispatchQueue(label: "com.chatterbox.ic.cacheAccess", attributes: .concurrent)
+    private let queue = DispatchQueue(label: "com.chatterbox.ic.ioQueue")
     
     private var documentsDirectory: URL? {
         try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
     }
+    
+    // MARK: - Constructor
+    
+    init() {
+        _cache.countLimit = 50
+        // set 100 mb limit
+        _cache.totalCostLimit = 100 * 1024 * 1024
+    }
+    
+    // MARK: - Public Functions
     
     public func saveImageToDisk(_ image: UIImage) async throws -> URL? {
         try queue.asyncAndWait(execute: {
@@ -74,15 +80,15 @@ final class ImageCacheKit: ImageCacherProtocol {
     }
     
     public func getImage(from url: URL) async -> UIImage? {
-        queue.asyncAndWait {
-            if let cachedImage = self.cache.object(forKey: url as NSURL) {
-                return cachedImage
-            }
-            
+        if let cachedImage = self.getCachedImage(url) {
+            return cachedImage
+        }
+        
+        return queue.asyncAndWait {
             // Resolve the potentially new path before fetching the image
             let resolvedURL = self.resolveURL(url)
             if let imageData = try? Data(contentsOf: resolvedURL), let image = UIImage(data: imageData) {
-                self.cache.setObject(image, forKey: url as NSURL)
+                self.setCachedImage(image: image, url: url)
                 return image
             }
             
@@ -91,7 +97,21 @@ final class ImageCacheKit: ImageCacherProtocol {
     }
 }
 
+// MARK: - Private extensions
+
 private extension ImageCacheKit {
+    private func getCachedImage(_ url: URL) -> UIImage? {
+        cacheAccessQueue.asyncAndWait { [weak self] in
+            self?._cache.object(forKey: url as NSURL)
+        }
+    }
+    
+    private func setCachedImage(image: UIImage, url: URL) {
+        cacheAccessQueue.asyncAndWait { [weak self] in
+            self?._cache.setObject(image, forKey: url as NSURL)
+        }
+    }
+    
     private func resolveURL(_ url: URL) -> URL {
         // Reconstructs the file URL to adapt to changes in the app's document directory path between app launches,
         // a common occurrence during development installs. This dynamic resolution ensures consistent file access
