@@ -45,4 +45,8 @@ public class ImageConfirmationViewModel: ObservableObject {
     func didTapCancel() {
         self.sceneDelegate?.didTapCancel()
     }
+    
+    deinit {
+        self.task?.cancel()
+    }
 }

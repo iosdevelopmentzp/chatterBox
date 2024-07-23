@@ -49,6 +49,9 @@ public final class ChatViewController: UIViewController {
     private typealias DataSource = UICollectionViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.MessageItem>
     private typealias Snapshot = NSDiffableDataSourceSnapshot<ChatViewSection.SectionType, ChatViewSection.MessageItem>
     
+    private var prototypeTextCell = MessageTextCell()
+    private var prototypeImageCell = MessageImagesCell()
+    
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
@@ -61,7 +64,8 @@ public final class ChatViewController: UIViewController {
     
     // MARK: - UI Components
     
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
+    private let flowLayout = UICollectionViewFlowLayout()
     private let messageComposerView = MessageComposerView(frame: .zero)
     private var bottomConstraint: NSLayoutConstraint?
     
@@ -122,6 +126,7 @@ public final class ChatViewController: UIViewController {
     private func setupViews() {
         collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
         collectionView.register(MessageImagesCell.self, forCellWithReuseIdentifier: String(describing: MessageImagesCell.self))
+        collectionView.delegate = self
         // Apply a vertical flip transform to the collection view
         collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
     }
@@ -217,28 +222,9 @@ public final class ChatViewController: UIViewController {
         }
     }
     
-    private func createLayout() -> UICollectionViewLayout {
-        UICollectionViewCompositionalLayout {
-            sectionIndex,
-            layoutEnvironment -> NSCollectionLayoutSection? in
-            
-            let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
-            
-            let item = NSCollectionLayoutItem(layoutSize: itemSize)
-            
-            item.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0)
-            
-            let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(44))
-            let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-            
-            let section = NSCollectionLayoutSection(group: group)
-            
-            return section
-        }
-    }
-    
     private func cell(for indexPath: IndexPath, message: ChatViewSection.MessageItem) -> UICollectionViewCell {
         let identifier = String(describing: MessageTextCell.self)
+        let returnCell: UICollectionViewCell
         switch message.content {
         case .textMessage(let model):
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
@@ -247,35 +233,63 @@ public final class ChatViewController: UIViewController {
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleMenuInteraction(action: $0, messageID: message.id)
             }
-            // Apply a vertical flip transform to the cell
-            cell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
-            return cell
+            returnCell = cell
         case .images(let model):
             let identifier = String(describing: MessageImagesCell.self)
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageImagesCell
             cell.configure(with: model, imageCacher: viewModel.imageCacher)
-            return cell
+            returnCell = cell
+        }
+        
+        // Apply a vertical flip transform to the cell
+        returnCell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
+        return returnCell
+    }
+}
+
+extension ChatViewController: UICollectionViewDelegateFlowLayout {
+    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let snapshot = self.dataSource.snapshot()
+        
+        let section = snapshot.sectionIdentifiers[indexPath.section]
+        let rowItem = snapshot.itemIdentifiers(inSection: section)[indexPath.row]
+
+        let width = collectionView.frame.width
+        let fittingSize = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
+
+        switch rowItem.content {
+        case .textMessage(let model):
+            prototypeTextCell.configure(model: model)
+            let size = prototypeTextCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+            return size
+        case .images(let model):
+            prototypeImageCell.configure(with: model, imageCacher: nil)
+            let size = prototypeImageCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+            return size
+        }
+    }
+
+    private func configurePrototypeTextCell(indexPath: IndexPath) {
+        // Assume `message` contains the data needed to configure the cell
+        let message = dataSource.itemIdentifier(for: indexPath)
+        if case let .textMessage(model) = message?.content {
+            prototypeTextCell.configure(model: model)
+        }
+    }
+
+    private func configurePrototypeImageCell(indexPath: IndexPath) {
+        // Similarly configure based on `message`
+        let message = dataSource.itemIdentifier(for: indexPath)
+        if case let .images(model) = message?.content {
+            prototypeImageCell.configure(with: model, imageCacher: viewModel.imageCacher)
         }
     }
 }
 
 // TODO: - move to the Extensions package
 extension UICollectionView {
+    /// Scrolls the collection view to the topmost item in the first section.
     func scrollToTop(animated: Bool) {
-        guard self.numberOfSections > 0 else {
-            return
-        }
-        
-        let firstSection = 0
-        let firstItemIndex = 0
-        
-        // Check if there are items in the first section
-        guard self.numberOfItems(inSection: firstSection) > 0 else {
-            return
-        }
-        
-        let indexPath = IndexPath(item: firstItemIndex, section: firstSection)
-        
-        self.scrollToItem(at: indexPath, at: .top, animated: animated)
+        self.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: animated)
     }
 }
