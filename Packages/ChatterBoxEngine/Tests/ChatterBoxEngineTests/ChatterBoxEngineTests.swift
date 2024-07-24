@@ -1,5 +1,4 @@
 import XCTest
-@testable import ChatterBoxEngine
 
 final class ChatterBoxEngineTests: XCTestCase {
     func testExample() throws {
