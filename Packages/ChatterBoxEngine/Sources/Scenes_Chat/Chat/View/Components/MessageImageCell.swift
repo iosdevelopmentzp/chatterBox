@@ -84,7 +84,7 @@ final class MessageImagesCell: UICollectionViewCell {
             contentContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             contentContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             contentContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            contentContainer.heightAnchor.constraint(equalTo: contentView.widthAnchor),
+            contentContainer.heightAnchor.constraint(equalToConstant: 200),
             
             collectionView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
