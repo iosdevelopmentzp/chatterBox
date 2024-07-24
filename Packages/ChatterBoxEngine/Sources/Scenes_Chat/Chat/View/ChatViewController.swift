@@ -149,8 +149,8 @@ public final class ChatViewController: UIViewController {
         let inputImage = UIImage(systemName: "arrow.down.circle.fill")
         let outputImage = UIImage(systemName: "arrow.up.circle.fill")
         
-        navigationItem.leftBarButtonItem = UIBarButtonItem(image: inputImage, style: .plain, target: self, action: #selector(generateInputMessage))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(image: outputImage, style: .plain, target: self, action: #selector(generateOutputMessage))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: inputImage, style: .plain, target: self, action: #selector(self.leftBarButtonItemTap))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: outputImage, style: .plain, target: self, action: #selector(self.rightBarButtonItemTap))
     }
     
     // MARK: - Binding
@@ -191,11 +191,11 @@ public final class ChatViewController: UIViewController {
         view.endEditing(true)
     }
     
-    @objc func generateInputMessage() {
+    @objc func leftBarButtonItemTap() {
         self.viewModel.didTapGenerateMessage(input: true)
     }
     
-    @objc func generateOutputMessage() {
+    @objc func rightBarButtonItemTap() {
         self.viewModel.didTapGenerateMessage(input: false)
     }
     

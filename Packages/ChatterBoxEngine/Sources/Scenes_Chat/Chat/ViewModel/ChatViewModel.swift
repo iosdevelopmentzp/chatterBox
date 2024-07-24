@@ -71,9 +71,8 @@ public class ChatViewModel {
     // MARK: - Input
     
     func didTapGenerateMessage(input: Bool) {
-        let senderId = input ? self.currentUser.id : self.conversation.participantsID.first(
-            where: { $0 != self.currentUser.id }
-        )
+        let inputUserId = self.conversation.participantsID.first(where: { $0 != self.currentUser.id })
+        let senderId = input ? inputUserId : self.currentUser.id
         
         let randomMessage = Self.fakeMessages.randomElement() ?? ""
         self.chatUseCase.saveMessage(
@@ -143,7 +142,12 @@ public class ChatViewModel {
     // MARK: - Private
     
     private func refreshState(conversation: Conversation? = nil) {
-        self.state = Self.makeState(self.state, context: &self.context, conversation: conversation)
+        self.state = Self.makeState(
+            self.state,
+            context: &self.context,
+            conversation: conversation,
+            currentUser: self.currentUser
+        )
     }
     
     // MARK: - State Factory
@@ -151,25 +155,27 @@ public class ChatViewModel {
     private static func makeState(
         _ previousState: ChatViewState?,
         context: inout ChatViewModelContext,
-        conversation: Conversation?
+        conversation: Conversation?,
+        currentUser: User
     ) -> ChatViewState {
         let messages: [ChatViewSection.MessageItem]? = conversation?.messages.compactMap({
             message -> ChatViewSection.MessageItem? in
             let content: ChatViewSection.MessageItem.Content?
+            let isOutput = message.senderID == currentUser.id
             switch message.type {
             case .text:
                 content = .textMessage(.init(
                     id: message.id,
                     message: message.content.text ?? "",
                     menuInteractions: [.delete],
-                    isOutput: true
+                    isOutput: isOutput
                 ))
             case .image:
                 content = .images(model: .init(
                     id: message.id,
                     imageURLs: message.content.imageURLs ?? [],
                     menuInteractions: [.delete],
-                    isOutput: true
+                    isOutput: isOutput
                 ))
             case .unknown:
                 content = nil
