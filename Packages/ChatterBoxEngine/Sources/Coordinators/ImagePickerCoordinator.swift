@@ -52,11 +52,11 @@ final class ImagePickerCoordinator: NavigationCoordinator {
         presentLoader(on: picker, completion: nil)
         
         group.notify(queue: .main) { [weak self] in
-            self?.dismissLoader(on: picker, completion: {
+            self?.dismissLoader(on: picker, completion: { [weak self] in
                 if let loadError {
                     self?.presentErrorAlert(error: loadError, on: picker)
                 } else {
-                    picker.dismiss(animated: true) {
+                    picker.dismiss(animated: true) { [weak self] in
                         self?.presentImageConfirmationView(images: selectedImages)
                         self?.picker = picker
                     }
@@ -85,7 +85,7 @@ final class ImagePickerCoordinator: NavigationCoordinator {
             showPicker()
         case .notDetermined:
             PHPhotoLibrary.requestAuthorization { [weak self] status in
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
                     if status == .authorized || status == .limited {
                         self?.showPicker()
                     } else {
@@ -156,8 +156,8 @@ extension ImagePickerCoordinator: PHPickerViewControllerDelegate {
 extension ImagePickerCoordinator: ImageConfirmationDelegate {
     func didTapCancel() {
         if let presented = self.navigationController.presentedViewController {
-            presented.dismiss(animated: true, completion: {
-                self.presentImagePicker(picker: self.picker)
+            presented.dismiss(animated: true, completion: { [weak self] in
+                self?.presentImagePicker(picker: self?.picker)
             })
         }
     }
@@ -166,8 +166,11 @@ extension ImagePickerCoordinator: ImageConfirmationDelegate {
         self.picker = nil
         
         let completion = { [weak self] in
-            self?.completion(urls)
-            self.map { $0.childDidFinish($0) }
+            guard let self else { return }
+            self.completion(urls)
+            self.children.forEach {
+                $0.childDidFinish(self)
+            }
         }
         
         guard let presented = self.navigationController.presentedViewController else {
