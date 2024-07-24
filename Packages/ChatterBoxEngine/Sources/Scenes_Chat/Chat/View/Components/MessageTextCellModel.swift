@@ -10,5 +10,6 @@ import Foundation
 struct MessageTextCellModel: Hashable {
     let id: String
     let message: String
+    let menuInteractions: [MenuInteractionAction]
     let isOutput: Bool
 }

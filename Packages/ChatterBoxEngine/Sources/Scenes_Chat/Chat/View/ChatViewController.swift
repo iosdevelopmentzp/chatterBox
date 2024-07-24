@@ -27,7 +27,6 @@ struct ChatViewSection: Hashable {
         
         let id: String
         let content: Content
-        let menuActions: [MenuInteractionAction]
     }
     
     // MARK: - Proeprties
@@ -229,7 +228,6 @@ public final class ChatViewController: UIViewController {
         case .textMessage(let model):
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
             cell.configure(model: model)
-            cell.setupMenuInteractions(message.menuActions)
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleMenuInteraction(action: $0, messageID: message.id)
             }

@@ -136,6 +136,7 @@ public class ChatViewModel {
                 content = .textMessage(.init(
                     id: message.id,
                     message: message.content.text ?? "",
+                    menuInteractions: [.delete],
                     isOutput: true
                 ))
             case .image:
@@ -150,7 +151,7 @@ public class ChatViewModel {
             
             guard let content else { return nil }
             
-            return .init(id: message.id, content: content, menuActions: [.delete])
+            return .init(id: message.id, content: content)
         })
         
         let newMessages: [ChatViewSection.MessageItem]

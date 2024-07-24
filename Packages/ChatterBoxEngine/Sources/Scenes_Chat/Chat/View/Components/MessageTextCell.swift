@@ -122,6 +122,7 @@ final class MessageTextCell: UICollectionViewCell {
     func configure(model: MessageTextCellModel) {
         self.textLabel.text = model.message
         updateUI(isOutputMessage: model.isOutput)
+        setupMenuInteractions(model.menuInteractions)
     }
     
     func setupMenuInteractions(_ actions: [MenuInteractionAction]) {
