@@ -168,9 +168,7 @@ extension ImagePickerCoordinator: ImageConfirmationDelegate {
         let completion = { [weak self] in
             guard let self else { return }
             self.completion(urls)
-            self.children.forEach {
-                $0.childDidFinish(self)
-            }
+            self.didFinish()
         }
         
         guard let presented = self.navigationController.presentedViewController else {

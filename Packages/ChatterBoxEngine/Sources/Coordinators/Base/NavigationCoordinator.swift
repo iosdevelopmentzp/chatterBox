@@ -12,6 +12,7 @@ open class NavigationCoordinator: CoordinatorProtocol {
     
     let navigationController: UINavigationController
     public private(set) var children: [CoordinatorProtocol] = []
+    public weak var parent: (any CoordinatorProtocol)?
     
     // MARK: - Constructor
     
@@ -31,5 +32,9 @@ open class NavigationCoordinator: CoordinatorProtocol {
     
     public func childDidFinish(_ child: CoordinatorProtocol) {
         children = children.filter { $0 !== child }
+    }
+    
+    public func didFinish() {
+        parent?.childDidFinish(self)
     }
 }

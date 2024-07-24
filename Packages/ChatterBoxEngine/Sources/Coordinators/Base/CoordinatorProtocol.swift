@@ -8,9 +8,11 @@
 import Foundation
 
 public protocol CoordinatorProtocol: AnyObject {
+    var parent: CoordinatorProtocol? { get }
     var children: [CoordinatorProtocol] { get }
     
     func start()
     func addChild(_ child: CoordinatorProtocol)
     func childDidFinish(_ child: CoordinatorProtocol)
+    func didFinish()
 }

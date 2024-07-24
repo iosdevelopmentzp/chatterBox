@@ -38,6 +38,7 @@ extension ChatCoordinator: ChatSceneDelegate {
             completion: completion
         )
         addChild(coordinator)
+        coordinator.parent = self
         coordinator.start()
     }
 }
