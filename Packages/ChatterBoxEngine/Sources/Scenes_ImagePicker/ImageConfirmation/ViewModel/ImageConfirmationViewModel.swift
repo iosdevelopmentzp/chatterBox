@@ -10,6 +10,7 @@ import ImageCacheKit
 
 public class ImageConfirmationViewModel: ObservableObject {
     @Published private(set) var images: [UIImage] = []
+    @Published private(set) var showLoader = false
     private let imageCacher: ImageCacherProtocol
     
     private weak var sceneDelegate: ImageConfirmationDelegate?
@@ -28,6 +29,7 @@ public class ImageConfirmationViewModel: ObservableObject {
         guard task == nil else {
             return
         }
+        self.showLoader = true
         self.task = Task { [weak self] in
             var urls: [URL] = []
             for image in self?.images ?? [] {
@@ -37,6 +39,7 @@ public class ImageConfirmationViewModel: ObservableObject {
             }
             let urlStrings = urls.map { $0.absoluteString }
             DispatchQueue.main.async { [weak self] in
+                self?.showLoader = false
                 self?.sceneDelegate?.didConfirm(urls: urlStrings)
             }
         }

@@ -28,13 +28,18 @@ let package = Package(
         // scenes
         
         .library(name: "Scenes_Chat", targets: ["Scenes_Chat"]),
-        .library(name: "Scenes_ImagePicker", targets: ["Scenes_ImagePicker"])
+        .library(name: "Scenes_ImagePicker", targets: ["Scenes_ImagePicker"]),
+        
+        // UI
+        
+        .library(name: "UIComponentsKit", targets: ["UIComponentsKit"])
     ],
     targets: [
         .target(name: "Coordinators", dependencies: [
             "Scenes_Chat",
             "Scenes_ImagePicker",
-            "DependencyInjector"
+            "DependencyInjector",
+            "UIComponentsKit"
         ]),
         
         .target(name: "Core"),
@@ -81,8 +86,13 @@ let package = Package(
         ]),
         
         .target(name: "Scenes_ImagePicker", dependencies: [
-            "ImageCacheKit"
+            "ImageCacheKit",
+            "UIComponentsKit"
         ]),
+        
+        // UI
+        
+        .target(name: "UIComponentsKit"),
     
         .testTarget(name: "ChatterBoxEngineTests", dependencies: []),
     ]
