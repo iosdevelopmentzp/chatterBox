@@ -61,8 +61,10 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     }
     
     func getConversations(userID: String) -> [Conversation] {
-        let conversations = self.fetchConversations(withParticipantID: userID)
-        return conversations.map(Conversation.init(entity:))
+        mainContext.performAndWait {
+            let conversations = self.fetchConversations(withParticipantID: userID)
+            return conversations.map(Conversation.init(entity:))
+        }
     }
     
     func getUser(id: String) -> User? {
