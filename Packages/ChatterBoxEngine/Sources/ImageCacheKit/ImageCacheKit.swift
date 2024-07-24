@@ -60,7 +60,7 @@ final class ImageCacheKit: ImageCacherProtocol {
     }
     
     public func getImages(from urls: [URL]) async -> [URL : UIImage] {
-        await withTaskGroup(of: (URL, UIImage?).self) { group in
+        await withTaskGroup(of: (URL, UIImage?).self) { [weak self] group in
             var images: [URL : UIImage] = [:]
             
             for url in urls {
