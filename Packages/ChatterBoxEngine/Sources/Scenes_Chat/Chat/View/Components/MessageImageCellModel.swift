@@ -13,6 +13,16 @@ struct MessageImageCellModel: Hashable {
     let id: String
     let imageURLs: [String]
     let isOutput: Bool
+    let imageModels: [ImageCellModel]
+    
+    init(id: String, imageURLs: [String], menuInteractions: [MenuInteractionAction], isOutput: Bool) {
+        self.id = id
+        self.imageURLs = imageURLs
+        self.isOutput = isOutput
+        self.imageModels = imageURLs.map {
+            ImageCellModel(imageURL: $0, isOutput: isOutput, menuInteractions: menuInteractions)
+        }
+    }
 }
 
 extension MessageImageCellModel {

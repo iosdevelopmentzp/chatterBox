@@ -9,25 +9,37 @@ import UIKit
 import ImageCacheKit
 
 final class MessageImagesCell: UICollectionViewCell {
+    // MARK: - Nested
+    
+    typealias InteractionDetails = (messageId: String, index: Int, action: MenuInteractionAction)
+    
     // MARK: - UI Components
     
     private let layout = UICollectionViewFlowLayout()
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
     private let contentContainer = UIView()
     
-    private var isOutput = false
+    // MARK: - Internal Properties
     
-    private var imageURLs: [String] = [] {
-        didSet { self.collectionView.reloadData() }
+    var onInteractionAction: ((InteractionDetails) -> Void)?
+    
+    // MARK: - Private Properties
+    
+    private var model: MessageImageCellModel? {
+        didSet {
+            guard model != oldValue else { return }
+            self.collectionView.reloadData()
+        }
     }
-    
-    private var cachedImages: [String: UIImage] = [:]
     
     private var getImagesTask: Task<(), Never>? {
         willSet {
             getImagesTask?.cancel()
         }
     }
+    
+    private var isOutput = false
+    private var cachedImages: [String: UIImage] = [:]
     
     private var messageTransform: CGAffineTransform {
         isOutput ? CGAffineTransform(scaleX: -1, y: 1) : CGAffineTransform.identity
@@ -59,6 +71,8 @@ final class MessageImagesCell: UICollectionViewCell {
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
         collectionView.delegate = self
+        
+        self.collectionView.clipsToBounds = false
     }
     
     private func setupConstraints() {
@@ -79,6 +93,33 @@ final class MessageImagesCell: UICollectionViewCell {
         ])
     }
     
+    // MARK: - Private
+    
+    private func updateCollectionView(model: MessageImageCellModel, cacher: ImageCacherProtocol?) {
+        guard self.model?.imageModels != model.imageModels else {
+            return
+        }
+        self.model = model
+        
+        guard let cacher else {
+            self.cachedImages = [:]
+            self.getImagesTask = nil
+            return
+        }
+        
+        self.cachedImages = [:]
+        self.getImagesTask = model.getImages(cacher: cacher, onUpdate: { [weak self] urlString, image in
+            let imageModel = self?.model?.imageModels.first(where: { $0.imageURL == urlString })
+            guard let self, let imageModel else { return }
+            if let row = self.model?.imageModels.firstIndex(of: imageModel),
+               collectionView.indexPathsForVisibleItems.contains(IndexPath(row: row, section: 0)) {
+                (collectionView.cellForItem(at: IndexPath(row: row, section: 0)) as? ImageCell)?.configure(with: imageModel, image: image)
+            }
+            
+            self.cachedImages[urlString] = image
+        })
+    }
+    
     // MARK: - Configure
     
     func configure(with model: MessageImageCellModel, imageCacher: ImageCacherProtocol?) {
@@ -86,29 +127,7 @@ final class MessageImagesCell: UICollectionViewCell {
         
         self.isOutput = model.isOutput
         self.contentContainer.transform = messageTransform
-        
-        guard let imageCacher else {
-            self.cachedImages = [:]
-            self.imageURLs = []
-            self.getImagesTask = nil
-            return
-        }
-        
-        guard self.imageURLs != model.imageURLs else {
-            return
-        }
-        self.cachedImages = [:]
-        self.imageURLs = model.imageURLs
-        
-        self.getImagesTask = model.getImages(cacher: imageCacher, onUpdate: { [weak self] urlString, image in
-            guard let self, self.imageURLs.contains(urlString) else { return }
-            if let row = self.imageURLs.firstIndex(of: urlString),
-               collectionView.indexPathsForVisibleItems.contains(IndexPath(row: row, section: 0)) {
-                (collectionView.cellForItem(at: IndexPath(row: row, section: 0)) as? ImageCell)?.configure(with: image)
-            }
-            
-            self.cachedImages[urlString] = image
-        })
+        self.updateCollectionView(model: model, cacher: imageCacher)
     }
     
     // MARK: - Deinit
@@ -122,7 +141,7 @@ final class MessageImagesCell: UICollectionViewCell {
 
 extension MessageImagesCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return imageURLs.count
+        (model?.imageModels ?? []).count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -130,7 +149,14 @@ extension MessageImagesCell: UICollectionViewDataSource {
             fatalError("Unable to dequeue ImageCell")
         }
         cell.transform = self.messageTransform
-        cell.configure(with: self.cachedImages[imageURLs[indexPath.row]])
+        if let cellModel = model?.imageModels[indexPath.row] {
+            let cachedImage = self.cachedImages[cellModel.imageURL]
+            cell.configure(with: cellModel, image: cachedImage)
+            
+            cell.onMenuAction = { [weak self] in
+                self?.onInteractionAction?((self?.model?.id ?? "", indexPath.row, $0))
+            }
+        }
         return cell
     }
 }
@@ -147,8 +173,12 @@ extension MessageImagesCell: UICollectionViewDelegateFlowLayout {
 // MARK: - ImageCell for individual images
 
 final class ImageCell: UICollectionViewCell {
+    private let container = UIView()
     private let imageView = UIImageView()
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
+    private var model: ImageCellModel?
+    
+    var onMenuAction: ((MenuInteractionAction) -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -166,29 +196,83 @@ final class ImageCell: UICollectionViewCell {
         imageView.layer.cornerRadius = 8
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
+        
+        container.layer.cornerRadius = 8
+        container.clipsToBounds = true
+        
+        self.clipsToBounds = false
     }
     
     private func setupConstraints() {
-        contentView.addSubview(imageView)
-        contentView.addSubview(activityIndicator)
+        contentView.addSubview(container)
+        container.addSubview(imageView)
+        container.addSubview(activityIndicator)
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        container.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            container.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 20),
+            container.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -20),
+            container.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            container.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            activityIndicator.centerYAnchor.constraint(equalTo: self.contentView.centerYAnchor),
-            activityIndicator.centerXAnchor.constraint(equalTo: self.contentView.centerXAnchor),
+            imageView.topAnchor.constraint(equalTo: container.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            imageView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            
+            activityIndicator.centerYAnchor.constraint(equalTo: self.container.centerYAnchor),
+            activityIndicator.centerXAnchor.constraint(equalTo: self.container.centerXAnchor),
         ])
     }
     
-    func configure(with image: UIImage?) {
+    func setupMenuInteractions() {
+        let actions = model?.menuInteractions ?? []
+        if actions.isEmpty, !self.container.interactions.isEmpty {
+            interactions.forEach {
+                self.removeInteraction($0)
+            }
+        }
+        
+        guard !actions.isEmpty, self.imageView.interactions.isEmpty else {
+            return
+        }
+        
+        let interaction = UIContextMenuInteraction(delegate: self)
+        self.container.addInteraction(interaction)
+    }
+    
+    func configure(with model: ImageCellModel, image: UIImage?) {
+        self.model = model
         image == nil ? activityIndicator.startAnimating() : activityIndicator.stopAnimating()
         imageView.image = image
+        self.setupMenuInteractions()
     }
+}
+
+extension ImageCell: UIContextMenuInteractionDelegate {
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+            let actions = (self.model?.menuInteractions ?? []).map { interactionItem -> UIAction in
+                UIAction(
+                    title: interactionItem.title,
+                    image: interactionItem.imageName.flatMap { UIImage(systemName: $0) },
+                    attributes: interactionItem.attributes,
+                    handler: { [weak self] _ in
+                        self?.onMenuAction?(interactionItem)
+                    }
+                )
+            }
+            
+            return UIMenu(title: "", children: actions)
+        }
+    }
+}
+
+struct ImageCellModel: Hashable {
+    let imageURL: String
+    let isOutput: Bool
+    let menuInteractions: [MenuInteractionAction]
 }

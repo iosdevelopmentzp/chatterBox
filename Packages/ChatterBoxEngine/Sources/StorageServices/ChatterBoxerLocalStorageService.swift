@@ -20,7 +20,7 @@ public protocol ChatterBoxerLocalStorageServiceProtocol {
     
     func saveMessage(_ message: Message)
     func deleteMessage(id: String)
-    func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never>
+    func conversationPublisher(conversationID: String) -> AnyPublisher<Conversation, Never>
 }
 
 final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProtocol {
@@ -147,23 +147,28 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
         }
     }
     
-    func messagesPublisher(conversationID: String) -> AnyPublisher<[Message], Never> {
-        let fetchRequest: NSFetchRequest<MessageEntity> = MessageEntity.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "%K == %@", #keyPath(MessageEntity.conversation.conversationID), conversationID)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+    func conversationPublisher(conversationID: String) -> AnyPublisher<Conversation, Never> {
+        let fetchRequest: NSFetchRequest<ConversationEntity> = ConversationEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "%K == %@", #keyPath(ConversationEntity.conversationID), conversationID)
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: #keyPath(ConversationEntity.conversationID), ascending: false)]
+        fetchRequest.fetchLimit = 1
         
         do {
-            let fetchedMessages = try FetchedObjectList<MessageEntity>(fetchRequest: fetchRequest, context: mainContext)
-            return fetchedMessages.objects
+            let fetchedConversations = try FetchedObjectList<ConversationEntity>(fetchRequest: fetchRequest, context: mainContext)
+            return fetchedConversations
+                .objects
+                .eraseToAnyPublisher()
+                .map { $0.first }
+                .compactMap { $0 }
                 .map {
-                    _ = fetchedMessages
-                    return $0.map(Message.init)
+                    _ = fetchedConversations
+                    return Conversation(entity: $0)
                 }
                 .eraseToAnyPublisher()
         } catch {
             // Handle Error appropriately
             debugPrint("Failed to publish messages conversationID: \(conversationID). Error: \(error)")
-            return Just([]).eraseToAnyPublisher()
+            return Empty(completeImmediately: true).eraseToAnyPublisher()
         }
     }
 }
@@ -253,10 +258,13 @@ private extension User {
 
 private extension Conversation {
     init(entity: ConversationEntity) {
+        let messages = (entity.messages?.map { Message(entity: $0) } ?? []).sorted(by: {
+            $0.timestamp > $1.timestamp
+        })
         self = .init(
             id: entity.conversationID ?? "",
             participantsID: entity.participants?.compactMap { $0.userID } ?? [],
-            messages: entity.messages?.map { Message(entity: $0) } ?? [],
+            messages: messages,
             title: entity.title,
             lastMessage: entity.lastMessage,
             lastMessageTime: entity.lastMessageTime

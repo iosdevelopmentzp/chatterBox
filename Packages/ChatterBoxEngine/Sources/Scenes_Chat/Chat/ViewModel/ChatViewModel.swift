@@ -101,23 +101,27 @@ public class ChatViewModel {
         self.chatUseCase.deleteMessage(id: messageID)
     }
     
+    func handleImageMenuInteraction(action: MenuInteractionAction, messageID: String, imageIndex: Int) {
+        let message = self.conversation.messages
+    }
+    
     // MARK: - Output
     
     func setupObservers(cancellations: inout Set<AnyCancellable>) {
         self.chatUseCase
-            .messagesPublisher(conversationID: self.conversation.id)
+            .conversationPublisher(conversationID: self.conversation.id)
             .receive(on: RunLoop.main)
             .removeDuplicates()
-            .sink { [weak self] messages in
-                self?.refreshState(newMessages: messages)
+            .sink { [weak self] conversation in
+                self?.refreshState(conversation: conversation)
             }
             .store(in: &cancellations)
     }
     
     // MARK: - Private
     
-    private func refreshState(newMessages: [Message]? = nil) {
-        self.state = Self.makeState(self.state, context: &self.context, messages: newMessages, conversation: conversation)
+    private func refreshState(conversation: Conversation? = nil) {
+        self.state = Self.makeState(self.state, context: &self.context, conversation: conversation)
     }
     
     // MARK: - State Factory
@@ -125,10 +129,9 @@ public class ChatViewModel {
     private static func makeState(
         _ previousState: ChatViewState?,
         context: inout ChatViewModelContext,
-        messages: [Message]?,
-        conversation: Conversation
+        conversation: Conversation?
     ) -> ChatViewState {
-        let messages: [ChatViewSection.MessageItem]? = messages?.compactMap({
+        let messages: [ChatViewSection.MessageItem]? = conversation?.messages.compactMap({
             message -> ChatViewSection.MessageItem? in
             let content: ChatViewSection.MessageItem.Content?
             switch message.type {
@@ -143,6 +146,7 @@ public class ChatViewModel {
                 content = .images(model: .init(
                     id: message.id,
                     imageURLs: message.content.imageURLs ?? [],
+                    menuInteractions: [.delete],
                     isOutput: true
                 ))
             case .unknown:
@@ -166,7 +170,7 @@ public class ChatViewModel {
         let newSection = ChatViewSection(type: .main, items: newMessages)
         
         return .init(
-            navigationTitle: conversation.title ?? "Chat",
+            navigationTitle: previousState?.navigationTitle ?? conversation?.title ?? "Chat",
             sections: [newSection],
             composerViewModel: .init(text: context.inputText),
             containsNewMessages: newMessages.first != previousMessages.first
