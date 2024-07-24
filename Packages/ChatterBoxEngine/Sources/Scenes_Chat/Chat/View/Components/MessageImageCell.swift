@@ -254,8 +254,8 @@ final class ImageCell: UICollectionViewCell {
 
 extension ImageCell: UIContextMenuInteractionDelegate {
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            let actions = (self.model?.menuInteractions ?? []).map { interactionItem -> UIAction in
+        UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
+            let actions = (self?.model?.menuInteractions ?? []).map { interactionItem -> UIAction in
                 UIAction(
                     title: interactionItem.title,
                     image: interactionItem.imageName.flatMap { UIImage(systemName: $0) },

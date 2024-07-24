@@ -146,8 +146,8 @@ final class MessageTextCell: UICollectionViewCell {
 extension MessageTextCell: UIContextMenuInteractionDelegate {
     
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
-            let actions = self.interactionsItems.map { interactionItem -> UIAction in
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
+            let actions = self?.interactionsItems.map { interactionItem -> UIAction in
                 UIAction(
                     title: interactionItem.title,
                     image: interactionItem.imageName.flatMap { UIImage(systemName: $0) },
@@ -156,7 +156,7 @@ extension MessageTextCell: UIContextMenuInteractionDelegate {
                         self?.onInteractionAction?(interactionItem)
                     }
                 )
-            }
+            } ?? []
             
             return UIMenu(title: "", children: actions)
         }

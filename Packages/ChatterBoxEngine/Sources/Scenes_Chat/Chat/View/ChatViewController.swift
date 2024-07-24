@@ -216,16 +216,16 @@ public final class ChatViewController: UIViewController {
             let keyboardHeight = keyboardSize.height
             let newConstraintValue = -keyboardHeight + self.view.safeAreaInsets.bottom
             
-            UIView.animate(withDuration: 0.3) {
-                self.bottomConstraint?.constant = min(0, newConstraintValue)
-                self.view.layoutIfNeeded()
+            UIView.animate(withDuration: 0.3) { [weak self] in
+                self?.bottomConstraint?.constant = min(0, newConstraintValue)
+                self?.view.layoutIfNeeded()
             }
         }
     }
 
     @objc private func keyboardWillHide(notification: NSNotification) {
-        UIView.animate(withDuration: 0.2) {
-            self.bottomConstraint?.constant = 0
+        UIView.animate(withDuration: 0.2) { [weak self] in
+            self?.bottomConstraint?.constant = 0
         }
     }
     
