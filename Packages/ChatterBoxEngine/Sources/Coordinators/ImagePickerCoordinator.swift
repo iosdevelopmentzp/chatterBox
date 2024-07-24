@@ -79,14 +79,34 @@ final class ImagePickerCoordinator: NavigationCoordinator {
     }
     
     private func presentImagePicker(picker: PHPickerViewController? = nil) {
-        let picker = picker ?? {
-            var config = PHPickerConfiguration()
-            config.selectionLimit = 10
-            config.filter = .images
-            return PHPickerViewController(configuration: config)
-        }()
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized, .limited:
+            showPicker()
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization { [weak self] status in
+                DispatchQueue.main.async {
+                    if status == .authorized || status == .limited {
+                        self?.showPicker()
+                    } else {
+                        self?.presentAccessDeniedAlert()
+                    }
+                }
+            }
+        default:
+            presentAccessDeniedAlert()
+        }
+    }
+    
+    private func showPicker() {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 10
+        config.filter = .images
+        
+        let picker = PHPickerViewController(configuration: config)
         picker.delegate = self
         self.navigationController.present(picker, animated: true)
+        self.picker = picker
     }
     
     private func presentLoader(on viewController: UIViewController, completion: (() -> Void)?) {
@@ -108,6 +128,16 @@ final class ImagePickerCoordinator: NavigationCoordinator {
         let okAction = UIAlertAction(title: "OK", style: .default)
         alert.addAction(okAction)
         viewController.present(alert, animated: true)
+    }
+    
+    private func presentAccessDeniedAlert() {
+        let alert = UIAlertController(
+            title: "Access Denied",
+            message: "Please enable access to your photos in settings to send images.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        self.navigationController.present(alert, animated: true)
     }
 }
 
