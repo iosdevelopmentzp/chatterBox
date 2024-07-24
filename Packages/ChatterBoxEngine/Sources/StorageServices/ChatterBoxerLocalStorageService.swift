@@ -19,6 +19,7 @@ public protocol ChatterBoxerLocalStorageServiceProtocol {
     func saveUser(_ user: User)
     
     func saveMessage(_ message: Message)
+    func updateMessage(_ message: Message)
     func deleteMessage(id: String)
     func conversationPublisher(conversationID: String) -> AnyPublisher<Conversation, Never>
 }
@@ -131,6 +132,51 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
         }
     }
     
+    func updateMessage(_ message: Message) {
+        mainContext.performAndWait {
+            do {
+                let messageEntity = try fetchEntity(type: MessageEntity.self, where: #keyPath(MessageEntity.messageID), equal: message.id)
+                
+                guard let messageEntity, let contentEntity = messageEntity.content else {
+                    return
+                }
+            
+                let imageURLS = (message.content.imageURLs ?? [])
+                contentEntity.images?.forEach {
+                    guard !imageURLS.contains(($0.url ?? "")) else {
+                        return
+                    }
+                    self.mainContext.delete($0)
+                }
+                
+                let images: [ImageEntity] = imageURLS.map { imageURL -> ImageEntity in
+                    if let existedImage = contentEntity.images?.first(where: { $0.url == imageURL }) {
+                        return existedImage
+                    } else {
+                        let newEntity = ImageEntity(context: self.mainContext)
+                        newEntity.update(with: imageURL, messageContent: [contentEntity])
+                        return newEntity
+                    }
+                }
+                
+                contentEntity.update(content: message.content, images: Set(images), message: messageEntity)
+                
+                messageEntity.update(
+                    id: message.id,
+                    type: message.type,
+                    content: contentEntity,
+                    timestamp: message.timestamp
+                )
+                
+                messageEntity.conversation?.lastUpdate = Date()
+                
+                self.saveContext()
+            } catch {
+                debugPrint("Failed to find message with ID \(message.id) to update.")
+            }
+        }
+    }
+    
     func deleteMessage(id: String) {
         mainContext.performAndWait {
             do {
@@ -236,7 +282,7 @@ private extension Message {
     init(entity: MessageEntity) {
         let content = Message.Content(
             text: entity.content?.text,
-            imageURLs: entity.content?.images?.compactMap { $0.url }
+            imageURLs: entity.content?.images?.compactMap { $0.url }.sorted(by: { $0 > $1 })
         )
         
         self = .init(
@@ -269,5 +315,34 @@ private extension Conversation {
             lastMessage: entity.lastMessage,
             lastMessageTime: entity.lastMessageTime
         )
+    }
+}
+
+private extension MessageEntity {
+    func update(
+        id: String?,
+        type: Message.MessageType,
+        content: MessageContentEntity,
+        timestamp: Date
+    ) {
+        self.messageID = id
+        self.type = type.rawValue
+        self.content = content
+        self.timestamp = timestamp
+    }
+}
+
+private extension MessageContentEntity {
+    func update(content: Message.Content, images: Set<ImageEntity>?, message: MessageEntity) {
+        self.text = content.text
+        self.images = images
+        self.message = message
+    }
+}
+
+private extension ImageEntity {
+    func update(with url: String, messageContent: Set<MessageContentEntity>) {
+        self.url = url
+        self.messageContents = messageContents
     }
 }

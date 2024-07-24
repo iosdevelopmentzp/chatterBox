@@ -4,6 +4,7 @@
         <attribute name="conversationID" attributeType="String"/>
         <attribute name="lastMessage" optional="YES" attributeType="String"/>
         <attribute name="lastMessageTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastUpdate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
         <relationship name="messages" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="MessageEntity" inverseName="conversation" inverseEntity="MessageEntity"/>
         <relationship name="participants" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="conversations" inverseEntity="UserEntity"/>

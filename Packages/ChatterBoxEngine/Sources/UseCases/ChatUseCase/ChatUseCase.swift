@@ -10,12 +10,17 @@ import Core
 import StorageServices
 import Combine
 
+public enum UpdateMessageAction {
+    case deleteImage(index: Int)
+}
+
 public protocol ChatUseCaseProtocol {
     func createConversation(title: String?, participantsID: [String])
     func getConversations(userID: String) -> [Conversation]
     
     func saveMessage(content: Message.Content, conversation: Conversation, senderID: String?) 
     func deleteMessage(id: String)
+    func updateMessage(_ message: Message, change: UpdateMessageAction)
     func conversationPublisher(conversationID: String) -> AnyPublisher<Conversation, Never>
 }
 
@@ -69,6 +74,34 @@ final class ChatUseCase: ChatUseCaseProtocol {
         )
         
         self.storageService.saveMessage(message)
+    }
+    
+    func updateMessage(_ message: Message, change: UpdateMessageAction) {
+        switch change {
+        case .deleteImage(let index) where message.type == .image:
+            var images = message.content.imageURLs ?? []
+            if images.count > index {
+                images.remove(at: index)
+            }
+            
+            if images.isEmpty {
+                self.storageService.deleteMessage(id: message.id)
+            } else {
+                let newContent = Message.Content(text: message.content.text, imageURLs: images)
+                let updatedMessage = Message(
+                    id: message.id,
+                    type: message.type,
+                    conversationID: message.conversationID,
+                    senderID: message.senderID,
+                    content: newContent,
+                    timestamp: message.timestamp
+                )
+                self.storageService.updateMessage(updatedMessage)
+            }
+            
+        default:
+            return
+        }
     }
     
     func deleteMessage(id: String) {

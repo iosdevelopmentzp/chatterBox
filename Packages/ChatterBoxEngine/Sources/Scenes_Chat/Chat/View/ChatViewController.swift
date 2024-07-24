@@ -236,8 +236,8 @@ public final class ChatViewController: UIViewController {
             let identifier = String(describing: MessageImagesCell.self)
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageImagesCell
             cell.configure(with: model, imageCacher: viewModel.imageCacher)
-            cell.onInteractionAction = {
-                debugPrint($0)
+            cell.onInteractionAction = { [weak self] in
+                self?.viewModel.handleImageMenuInteraction(action: $0.action, messageID: $0.messageId, imageIndex: $0.index)
             }
             returnCell = cell
         }

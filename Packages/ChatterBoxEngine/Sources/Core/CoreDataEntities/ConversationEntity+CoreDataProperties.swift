@@ -2,7 +2,7 @@
 //  ConversationEntity+CoreDataProperties.swift
 //  ChatterBox
 //
-//  Created by Dmytro Vorko on 21/07/2024.
+//  Created by Dmytro Vorko on 24/07/2024.
 //
 //
 
@@ -20,6 +20,7 @@ extension ConversationEntity {
     @NSManaged public var lastMessage: String?
     @NSManaged public var lastMessageTime: Date?
     @NSManaged public var title: String?
+    @NSManaged public var lastUpdate: Date?
     @NSManaged public var messages: Set<MessageEntity>?
     @NSManaged public var participants: Set<UserEntity>?
 

@@ -102,7 +102,14 @@ public class ChatViewModel {
     }
     
     func handleImageMenuInteraction(action: MenuInteractionAction, messageID: String, imageIndex: Int) {
-        let message = self.conversation.messages
+        switch action {
+        case .delete:
+            guard let message = self.conversation.messages.first(where: { $0.id == messageID }) else {
+                return
+            }
+            
+            self.chatUseCase.updateMessage(message, change: .deleteImage(index: imageIndex))
+        }
     }
     
     // MARK: - Output
@@ -113,6 +120,7 @@ public class ChatViewModel {
             .receive(on: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] conversation in
+                self?.conversation = conversation
                 self?.refreshState(conversation: conversation)
             }
             .store(in: &cancellations)

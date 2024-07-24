@@ -2,7 +2,7 @@
 //  ConversationEntity+CoreDataClass.swift
 //  ChatterBox
 //
-//  Created by Dmytro Vorko on 21/07/2024.
+//  Created by Dmytro Vorko on 24/07/2024.
 //
 //
 
