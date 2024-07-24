@@ -55,6 +55,8 @@ public final class ChatViewController: UIViewController {
     
     private let viewModel: ChatViewModel
     
+    private var sizesCache: [ChatViewSection.MessageItem: CGSize] = [:]
+    
     private lazy var dataSource = DataSource(collectionView: collectionView) { [weak self] in
         self?.cell(for: $1, message: $2)
     }
@@ -253,37 +255,28 @@ extension ChatViewController: UICollectionViewDelegateFlowLayout {
         let snapshot = self.dataSource.snapshot()
         
         let section = snapshot.sectionIdentifiers[indexPath.section]
-        let rowItem = snapshot.itemIdentifiers(inSection: section)[indexPath.row]
+        let messageItem = snapshot.itemIdentifiers(inSection: section)[indexPath.row]
 
         let width = collectionView.frame.width
         let fittingSize = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
 
-        switch rowItem.content {
-        case .textMessage(let model):
-            prototypeTextCell.configure(model: model)
-            let size = prototypeTextCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
-            return size
-        case .images(let model):
-            prototypeImageCell.configure(with: model, imageCacher: nil)
-            let size = prototypeImageCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
-            return size
+        let size: CGSize
+        
+        if let cachedValue = self.sizesCache[messageItem], cachedValue.width == width {
+            size = cachedValue
+        } else {
+            switch messageItem.content {
+            case .textMessage(let model):
+                prototypeTextCell.configure(model: model)
+                size = prototypeTextCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+            case .images(let model):
+                prototypeImageCell.configure(with: model, imageCacher: nil)
+                size = prototypeImageCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
+            }
+            sizesCache[messageItem] = size
         }
-    }
-
-    private func configurePrototypeTextCell(indexPath: IndexPath) {
-        // Assume `message` contains the data needed to configure the cell
-        let message = dataSource.itemIdentifier(for: indexPath)
-        if case let .textMessage(model) = message?.content {
-            prototypeTextCell.configure(model: model)
-        }
-    }
-
-    private func configurePrototypeImageCell(indexPath: IndexPath) {
-        // Similarly configure based on `message`
-        let message = dataSource.itemIdentifier(for: indexPath)
-        if case let .images(model) = message?.content {
-            prototypeImageCell.configure(with: model, imageCacher: viewModel.imageCacher)
-        }
+        
+        return size
     }
 }
 
