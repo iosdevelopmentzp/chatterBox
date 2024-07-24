@@ -101,6 +101,14 @@ public final class ChatViewController: UIViewController {
         self.removeKeyboardNotifications()
     }
     
+    public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+
+        coordinator.animate(alongsideTransition: { [weak self] _ in
+            self?.collectionView.collectionViewLayout.invalidateLayout()
+        }, completion: nil)
+    }
+    
     // MARK: - Setup
     
     private func setupConstraints() {
