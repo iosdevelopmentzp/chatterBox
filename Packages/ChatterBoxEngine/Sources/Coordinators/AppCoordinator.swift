@@ -35,6 +35,7 @@ public final class AppCoordinator: NavigationCoordinator {
         )
         
         addChild(chatCoordinator)
+        chatCoordinator.parent = self
         chatCoordinator.start()
         window.makeKeyAndVisible()
     }
