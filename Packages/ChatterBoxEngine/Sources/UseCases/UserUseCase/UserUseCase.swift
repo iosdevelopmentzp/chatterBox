@@ -12,6 +12,7 @@ import StorageServices
 public protocol UserUseCaseProtocol {
     func getCurrentUser() -> User
     func createUser(userName: String)
+    func generateUser() -> User
 }
 
 final class UserUseCase: UserUseCaseProtocol {
@@ -35,6 +36,13 @@ final class UserUseCase: UserUseCaseProtocol {
             self.userDefaults?.currentUserID = id
             self.storage.saveUser(user)
         }
+        return user
+    }
+    
+    func generateUser() -> User {
+        let id = UUID().uuidString
+        let user = User(id: id, username: "User_\(id)")
+        self.storage.saveUser(user)
         return user
     }
     

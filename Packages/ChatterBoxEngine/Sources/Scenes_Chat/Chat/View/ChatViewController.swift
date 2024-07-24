@@ -106,7 +106,10 @@ public final class ChatViewController: UIViewController {
 
         coordinator.animate(alongsideTransition: { [weak self] _ in
             self?.collectionView.collectionViewLayout.invalidateLayout()
-        }, completion: nil)
+            
+        }, completion: { [weak self] _ in
+            self?.collectionView.collectionViewLayout.invalidateLayout()
+        })
     }
     
     // MARK: - Setup
@@ -138,6 +141,16 @@ public final class ChatViewController: UIViewController {
         collectionView.delegate = self
         // Apply a vertical flip transform to the collection view
         collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
+        
+        setupNavigationBar()
+    }
+    
+    private func setupNavigationBar() {
+        let inputImage = UIImage(systemName: "arrow.down.circle.fill")
+        let outputImage = UIImage(systemName: "arrow.up.circle.fill")
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: inputImage, style: .plain, target: self, action: #selector(generateInputMessage))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: outputImage, style: .plain, target: self, action: #selector(generateOutputMessage))
     }
     
     // MARK: - Binding
@@ -176,6 +189,14 @@ public final class ChatViewController: UIViewController {
     
     @objc private func dismissKeyboard() {
         view.endEditing(true)
+    }
+    
+    @objc func generateInputMessage() {
+        self.viewModel.didTapGenerateMessage(input: true)
+    }
+    
+    @objc func generateOutputMessage() {
+        self.viewModel.didTapGenerateMessage(input: false)
     }
     
     // MARK: - Keyboard Notifications
