@@ -89,6 +89,7 @@ final class MessageTextCell: UITableViewCell, Reusable {
             messageContainer.topAnchor.constraint(equalTo: contentContainer.topAnchor, constant: 4),
             messageContainer.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor, constant: 8),
             messageContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -4),
+            messageContainer.widthAnchor.constraint(lessThanOrEqualTo: contentContainer.widthAnchor, multiplier: 0.8).setPriority(.init(999)),
             
             /* textLabelView */
             textLabelView.topAnchor.constraint(equalTo: messageContainer.topAnchor, constant: 8),
@@ -96,11 +97,6 @@ final class MessageTextCell: UITableViewCell, Reusable {
             textLabelView.leadingAnchor.constraint(equalTo: messageContainer.leadingAnchor, constant: 8),
             textLabelView.bottomAnchor.constraint(equalTo: messageContainer.bottomAnchor, constant: -8)
         ])
-        
-        // Create a width constraint that is less than or equal to 70% of contentContainer's width
-        let maxWidthConstraint = messageContainer.widthAnchor.constraint(lessThanOrEqualTo: contentContainer.widthAnchor, multiplier: 0.8)
-        maxWidthConstraint.priority = UILayoutPriority(rawValue: 999)
-        maxWidthConstraint.isActive = true
     }
     
     private func updateUI(isOutputMessage: Bool) {

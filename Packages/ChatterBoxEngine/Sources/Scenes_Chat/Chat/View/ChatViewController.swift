@@ -117,11 +117,10 @@ public final class ChatViewController: UIViewController {
             tableView.bottomAnchor.constraint(equalTo: self.messageComposerView.topAnchor),
             
             messageComposerView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            messageComposerView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor)
+            messageComposerView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            
+            messageComposerView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: 0).linkToReference(&self.bottomConstraint)
         ])
-        
-        self.bottomConstraint = messageComposerView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: 0)
-        self.bottomConstraint?.isActive = true
     }
     
     private func setupViews() {

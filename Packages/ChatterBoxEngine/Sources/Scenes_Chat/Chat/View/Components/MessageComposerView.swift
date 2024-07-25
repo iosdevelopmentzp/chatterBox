@@ -72,6 +72,9 @@ final class MessageComposerView: UIView {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         textFieldBackground.translatesAutoresizingMaskIntoConstraints = false
         
+        sendButton.translatesAutoresizingMaskIntoConstraints = false
+        attachButton.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             /* stackView */
             stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
@@ -83,17 +86,10 @@ final class MessageComposerView: UIView {
             textFieldBackground.trailingAnchor.constraint(equalTo: self.textField.trailingAnchor, constant: 4),
             textFieldBackground.topAnchor.constraint(equalTo: self.textField.topAnchor, constant: -6),
             textFieldBackground.bottomAnchor.constraint(equalTo: self.textField.bottomAnchor, constant: 6),
+            
+            sendButton.widthAnchor.constraint(equalToConstant: 40),
+            attachButton.widthAnchor.constraint(equalToConstant: 40),
         ])
-        
-        [sendButton, attachButton].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            let size: CGFloat = 40
-            
-            NSLayoutConstraint.activate([
-                $0.widthAnchor.constraint(equalToConstant: size)
-            ])
-            
-        }
         
         sendButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         attachButton.setContentCompressionResistancePriority(.required, for: .horizontal)

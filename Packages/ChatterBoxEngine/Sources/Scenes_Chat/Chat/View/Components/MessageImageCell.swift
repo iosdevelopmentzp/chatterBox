@@ -87,17 +87,13 @@ final class MessageImagesCell: UITableViewCell, Reusable {
             contentContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             contentContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             contentContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            contentContainer.heightAnchor.constraint(equalToConstant: 200).setPriority(.init(999)),
             
             collectionView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor)
         ])
-        
-        
-        let height = contentContainer.heightAnchor.constraint(equalToConstant: 200)
-        height.priority = .init(999)
-        height.isActive = true
     }
     
     // MARK: - Private
@@ -171,7 +167,7 @@ extension MessageImagesCell: UICollectionViewDataSource {
 extension MessageImagesCell: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let height = collectionView.frame.height
-        return CGSize(width: height * 0.6, height: height)
+        return CGSize(width: ceil(height * 0.75), height: height)
     }
 }
 
