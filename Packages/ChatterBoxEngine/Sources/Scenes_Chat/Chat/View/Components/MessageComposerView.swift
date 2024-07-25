@@ -94,6 +94,16 @@ final class MessageComposerView: UIView {
             bottomSeparator.bottomAnchor.constraint(equalTo: self.bottomAnchor),
         ])
         
+        [sendButton, attachButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            let size: CGFloat = 40
+            
+            NSLayoutConstraint.activate([
+                $0.widthAnchor.constraint(equalToConstant: size)
+            ])
+            
+        }
+        
         sendButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         attachButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
