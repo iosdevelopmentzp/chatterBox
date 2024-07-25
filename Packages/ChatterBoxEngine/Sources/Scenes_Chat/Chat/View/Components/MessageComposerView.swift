@@ -102,8 +102,14 @@ final class MessageComposerView: UIView {
     
     private func setupComponentsUserInteractions() {
         textField.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
-        sendButton.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
-        attachButton.addTarget(self, action: #selector(attachButtonTapped), for: .touchUpInside)
+
+        sendButton.addAction(.init { [weak self] _ in
+            self?.onEvent?(.didTapSendButton)
+        }, for: .touchUpInside)
+        
+        attachButton.addAction(.init { [weak self] _ in
+            self?.onEvent?(.didTapAttachButton)
+        }, for: .touchUpInside)
     }
     
     // MARK: - User Interaction
@@ -111,14 +117,6 @@ final class MessageComposerView: UIView {
     @objc private func textFieldDidChange(_ textField: UITextField) {
         updateSendButtonState(animated: true)
         self.onEvent?(.textDidChange(textField.text ?? ""))
-    }
-    
-    @objc private func sendButtonTapped() {
-        self.onEvent?(.didTapSendButton)
-    }
-    
-    @objc private func attachButtonTapped() {
-        self.onEvent?(.didTapAttachButton)
     }
     
     // MARK: - Configure
