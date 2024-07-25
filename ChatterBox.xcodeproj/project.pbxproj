@@ -443,7 +443,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = LMFZ9DN45R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChatterBox/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app requires access to your photo library to let you choose photos to send in chats.";
@@ -472,7 +471,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = LMFZ9DN45R;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ChatterBox/Info.plist;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "This app requires access to your photo library to let you choose photos to send in chats.";
