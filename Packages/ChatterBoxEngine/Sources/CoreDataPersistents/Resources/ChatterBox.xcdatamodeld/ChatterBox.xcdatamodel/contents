@@ -11,18 +11,18 @@
     </entity>
     <entity name="ImageEntity" representedClassName="ImageEntity" syncable="YES">
         <attribute name="url" attributeType="String"/>
-        <relationship name="messageContents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MessageContentEntity"/>
+        <relationship name="messageContents" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MessageContentEntity" inverseName="images" inverseEntity="MessageContentEntity"/>
     </entity>
     <entity name="MessageContentEntity" representedClassName="MessageContentEntity" syncable="YES">
         <attribute name="text" optional="YES" attributeType="String"/>
-        <relationship name="images" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageEntity"/>
-        <relationship name="message" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MessageEntity"/>
+        <relationship name="images" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ImageEntity" inverseName="messageContents" inverseEntity="ImageEntity"/>
+        <relationship name="message" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="MessageEntity" inverseName="content" inverseEntity="MessageEntity"/>
     </entity>
     <entity name="MessageEntity" representedClassName="MessageEntity" syncable="YES">
         <attribute name="messageID" attributeType="String"/>
         <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="type" attributeType="String"/>
-        <relationship name="content" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MessageContentEntity"/>
+        <relationship name="content" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="MessageContentEntity" inverseName="message" inverseEntity="MessageContentEntity"/>
         <relationship name="conversation" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ConversationEntity" inverseName="messages" inverseEntity="ConversationEntity"/>
         <relationship name="sender" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="UserEntity" inverseName="messages" inverseEntity="UserEntity"/>
     </entity>
