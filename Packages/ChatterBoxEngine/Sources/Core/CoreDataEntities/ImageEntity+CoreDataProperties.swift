@@ -17,7 +17,7 @@ extension ImageEntity {
     }
 
     @NSManaged public var url: String?
-    @NSManaged public var messageContents: NSSet?
+    @NSManaged public var messageContents: Set<MessageContentEntity>?
 
 }
 

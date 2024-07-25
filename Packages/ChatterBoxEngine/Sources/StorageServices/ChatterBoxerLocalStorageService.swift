@@ -25,14 +25,18 @@ public protocol ChatterBoxerLocalStorageServiceProtocol {
 }
 
 final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProtocol {
-    private let storageService: ChatterBoxCoreStorageServiceProtocol
+    // MARK: - Properties
+    private let coreStorageService: ChatterBoxCoreStorageServiceProtocol
+    private let adapter = CoreDataToDomainAdapter()
     
     private var mainContext: NSManagedObjectContext {
-        storageService.viewContext
+        coreStorageService.viewContext
     }
     
+    // MARK: - Constructor
+    
     init(storageService: ChatterBoxCoreStorageServiceProtocol) {
-        self.storageService = storageService
+        self.coreStorageService = storageService
     }
     
     // MARK: - ChatterBoxerLocalStorageServiceProtocol
@@ -63,7 +67,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
     func getConversations(userID: String) -> [Conversation] {
         mainContext.performAndWait {
             let conversations = self.fetchConversations(withParticipantID: userID)
-            return conversations.map(Conversation.init(entity:))
+            return conversations.map(adapter.translateToConversation(entity:))
         }
     }
     
@@ -75,7 +79,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                     return
                 }
                 
-                user = User(entity: userEntity)
+                user = adapter.translateToUser(entity: userEntity)
             } catch {
                 debugPrint("Failed get user id: \(id). Error: \(error)")
             }
@@ -156,15 +160,21 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                         return existedImage
                     } else {
                         let newEntity = ImageEntity(context: self.mainContext)
-                        newEntity.update(with: imageURL, messageContent: [contentEntity])
+                        adapter.updateImageEntity(obj: newEntity, with: imageURL, messageContent: [contentEntity])
                         return newEntity
                     }
                 }
                 
-                contentEntity.update(content: message.content, images: Set(images), message: messageEntity)
+                adapter.updateMessageContentEntity(
+                    obj: contentEntity,
+                    with: message.content,
+                    images: Set(images),
+                    message: messageEntity
+                )
                 
-                messageEntity.update(
-                    id: message.id,
+                adapter.updateMessageEntity(
+                    obj: messageEntity,
+                    with: message.id,
                     type: message.type,
                     content: contentEntity,
                     timestamp: message.timestamp
@@ -210,7 +220,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
                 .compactMap { $0 }
                 .map {
                     _ = fetchedConversations
-                    return Conversation(entity: $0)
+                    return self.adapter.translateToConversation(entity: $0)
                 }
                 .eraseToAnyPublisher()
         } catch {
@@ -223,7 +233,7 @@ final class ChatterBoxerLocalStorageService: ChatterBoxerLocalStorageServiceProt
 
 // MARK: - Private
 
-extension ChatterBoxerLocalStorageService {
+private extension ChatterBoxerLocalStorageService {
     private func fetchUsers(withConversationID conversationID: String) -> [UserEntity] {
         let request = UserEntity.fetchRequest()
         request.predicate = NSPredicate(format: "ANY conversations.conversationID == %@", conversationID)
@@ -277,74 +287,5 @@ extension ChatterBoxerLocalStorageService {
             // Handle any errors appropriately
             debugPrint("Error saving message: \(error), \(error.userInfo)")
         }
-    }
-}
-
-private extension Message {
-    init(entity: MessageEntity) {
-        let content = Message.Content(
-            text: entity.content?.text,
-            imageURLs: entity.content?.images?.compactMap { $0.url }.sorted(by: { $0 > $1 })
-        )
-        
-        self = .init(
-            id: entity.messageID ?? "",
-            type: entity.type.flatMap { MessageType(rawValue: $0) } ?? .unknown,
-            conversationID: entity.conversation?.conversationID,
-            senderID: entity.sender?.userID,
-            content: content,
-            timestamp: entity.timestamp ?? Date()
-        )
-    }
-}
-
-private extension User {
-    init(entity: UserEntity) {
-        self = .init(id: entity.userID ?? "", username: entity.username ?? "")
-    }
-}
-
-private extension Conversation {
-    init(entity: ConversationEntity) {
-        let messages = (entity.messages?.map { Message(entity: $0) } ?? []).sorted(by: {
-            $0.timestamp > $1.timestamp
-        })
-        self = .init(
-            id: entity.conversationID ?? "",
-            participantsID: entity.participants?.compactMap { $0.userID } ?? [],
-            messages: messages,
-            title: entity.title,
-            lastMessage: entity.lastMessage,
-            lastMessageTime: entity.lastMessageTime
-        )
-    }
-}
-
-private extension MessageEntity {
-    func update(
-        id: String?,
-        type: Message.MessageType,
-        content: MessageContentEntity,
-        timestamp: Date
-    ) {
-        self.messageID = id
-        self.type = type.rawValue
-        self.content = content
-        self.timestamp = timestamp
-    }
-}
-
-private extension MessageContentEntity {
-    func update(content: Message.Content, images: Set<ImageEntity>?, message: MessageEntity) {
-        self.text = content.text
-        self.images = images
-        self.message = message
-    }
-}
-
-private extension ImageEntity {
-    func update(with url: String, messageContent: Set<MessageContentEntity>) {
-        self.url = url
-        self.messageContents = messageContents
     }
 }
