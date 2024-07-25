@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Extensions
 
 extension MenuInteractionAction {
     var title: String {
@@ -30,7 +31,7 @@ extension MenuInteractionAction {
     }
 }
 
-final class MessageTextCell: UITableViewCell {
+final class MessageTextCell: UITableViewCell, Reusable {
     // MARK: - UI Components
     
     private let contentContainer = UIView(frame: .zero)

@@ -7,6 +7,7 @@
 
 import UIKit
 import Combine
+import Extensions
 
 enum MenuInteractionAction {
     case delete
@@ -128,8 +129,8 @@ public final class ChatViewController: UIViewController {
         tableView.separatorColor = UIColor.clear
         tableView.estimatedRowHeight = 100
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.register(MessageTextCell.self, forCellReuseIdentifier: String(describing: MessageTextCell.self))
-        tableView.register(MessageImagesCell.self, forCellReuseIdentifier: String(describing: MessageImagesCell.self))
+        tableView.register(MessageTextCell.self, forCellReuseIdentifier: MessageTextCell.identifier)
+        tableView.register(MessageImagesCell.self, forCellReuseIdentifier: MessageImagesCell.identifier)
         // Apply a vertical flip transform to the table view
         tableView.transform = CGAffineTransform(scaleX: 1, y: -1)
         
@@ -245,19 +246,17 @@ public final class ChatViewController: UIViewController {
     }
     
     private func cell(for indexPath: IndexPath, message: ChatViewSection.MessageItem) -> UITableViewCell {
-        let identifier = String(describing: MessageTextCell.self)
         let returnCell: UITableViewCell
         switch message.content {
         case .textMessage(let model):
-            let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as! MessageTextCell
+            let cell = tableView.dequeueReusableCell(ofType: MessageTextCell.self, for: indexPath)
             cell.configure(model: model)
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleMenuInteraction(action: $0, messageID: message.id)
             }
             returnCell = cell
         case .images(let model):
-            let identifier = String(describing: MessageImagesCell.self)
-            let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as! MessageImagesCell
+            let cell = tableView.dequeueReusableCell(ofType: MessageImagesCell.self, for: indexPath)
             cell.configure(with: model, imageCacher: viewModel.imageCacher)
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleImageMenuInteraction(action: $0.action, messageID: $0.messageId, imageIndex: $0.index)
@@ -268,15 +267,5 @@ public final class ChatViewController: UIViewController {
         // Apply a vertical flip transform to the cell
         returnCell.contentView.transform = CGAffineTransform(scaleX: 1, y: -1)
         return returnCell
-    }
-}
-
-extension UITableView {
-    /// Scrolls the table view to the first row in the first section.
-    func scrollToTop(animated: Bool) {
-        let indexPath = IndexPath(row: 0, section: 0)
-        if self.numberOfSections > 0 && self.numberOfRows(inSection: 0) > 0 {
-            self.scrollToRow(at: indexPath, at: .top, animated: animated)
-        }
     }
 }

@@ -14,6 +14,7 @@ let package = Package(
         .library(name: "CoreDataPersistents", targets: ["CoreDataPersistents"]),
         .library(name: "DependencyInjector", targets: ["DependencyInjector"]),
         .library(name: "MainAssembly", targets: ["MainAssembly"]),
+        .library(name: "Extensions", targets: ["Extensions"]),
         
         // services
         
@@ -57,6 +58,8 @@ let package = Package(
             "ImageCacheKit"
         ]),
         
+        .target(name: "Extensions"),
+        
         // services
         
         .target(name: "CoreStorageService", dependencies: ["DependencyInjector"]),
@@ -82,7 +85,8 @@ let package = Package(
         .target(name: "Scenes_Chat", dependencies: [
             "Core",
             "UseCases",
-            "ImageCacheKit"
+            "ImageCacheKit",
+            "Extensions"
         ]),
         
         .target(name: "Scenes_ImagePicker", dependencies: [

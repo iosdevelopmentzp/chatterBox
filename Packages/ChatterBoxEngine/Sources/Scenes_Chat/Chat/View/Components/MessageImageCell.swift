@@ -7,8 +7,9 @@
 
 import UIKit
 import ImageCacheKit
+import Extensions
 
-final class MessageImagesCell: UITableViewCell {
+final class MessageImagesCell: UITableViewCell, Reusable {
     // MARK: - Nested
     
     typealias InteractionDetails = (messageId: String, index: Int, action: MenuInteractionAction)
@@ -151,9 +152,7 @@ extension MessageImagesCell: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: String(describing: ImageCell.self), for: indexPath) as? ImageCell else {
-            fatalError("Unable to dequeue ImageCell")
-        }
+        let cell = collectionView.dequeueReusableCell(ofType: ImageCell.self, at: indexPath)
         cell.transform = self.messageTransform
         if let cellModel = model?.imageModels[indexPath.row] {
             let cachedImage = self.cachedImages[cellModel.imageURL]
@@ -178,7 +177,7 @@ extension MessageImagesCell: UICollectionViewDelegateFlowLayout {
 
 // MARK: - ImageCell for individual images
 
-final class ImageCell: UICollectionViewCell {
+final class ImageCell: UICollectionViewCell, Reusable {
     private let container = UIView()
     private let imageView = UIImageView()
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
