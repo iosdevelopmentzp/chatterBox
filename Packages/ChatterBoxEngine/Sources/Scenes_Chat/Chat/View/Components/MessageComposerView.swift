@@ -7,6 +7,11 @@
 
 import UIKit
 
+struct MessageComposerViewModel: Hashable {
+    let placeholder = "Enter your message here"
+    let text: String
+}
+
 final class MessageComposerView: UIView {
     // MARK: - Nested
     

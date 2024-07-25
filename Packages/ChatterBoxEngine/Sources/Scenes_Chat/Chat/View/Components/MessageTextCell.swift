@@ -8,27 +8,11 @@
 import UIKit
 import Extensions
 
-extension MenuInteractionAction {
-    var title: String {
-        switch self {
-        case .delete:
-            return "Delete"
-        }
-    }
-    
-    var imageName: String? {
-        switch self {
-        case .delete:
-            return "trash"
-        }
-    }
-    
-    var attributes: UIMenuElement.Attributes {
-        switch self {
-        case .delete:
-            return .destructive
-        }
-    }
+struct MessageTextCellModel: Hashable {
+    let id: String
+    let message: String
+    let menuInteractions: [MenuInteractionAction]
+    let isOutput: Bool
 }
 
 final class MessageTextCell: UITableViewCell, Reusable {
@@ -158,6 +142,31 @@ extension MessageTextCell: UIContextMenuInteractionDelegate {
             } ?? []
             
             return UIMenu(title: "", children: actions)
+        }
+    }
+}
+
+ // MARK: - MenuInteractionAction Extra
+
+extension MenuInteractionAction {
+    var title: String {
+        switch self {
+        case .delete:
+            return "Delete"
+        }
+    }
+    
+    var imageName: String? {
+        switch self {
+        case .delete:
+            return "trash"
+        }
+    }
+    
+    var attributes: UIMenuElement.Attributes {
+        switch self {
+        case .delete:
+            return .destructive
         }
     }
 }
