@@ -31,7 +31,7 @@ final class UserUseCase: UserUseCaseProtocol {
         if let currentUserID = self.userDefaults?.currentUserID, let storageUser = storage.getUser(id: currentUserID) {
             user = storageUser
         } else {
-            let id = String(UUID().hashValue)
+            let id = UUID().uuidString
             user = User(id: id, username: "User_\(id)")
             self.userDefaults?.currentUserID = id
             self.storage.saveUser(user)
@@ -47,7 +47,7 @@ final class UserUseCase: UserUseCaseProtocol {
     }
     
     func createUser(userName: String) {
-        let id = String(UUID().hashValue)
+        let id = UUID().uuidString
         let user = User(id: id, username: userName)
         self.storage.saveUser(user)
     }

@@ -65,7 +65,7 @@ final class ChatUseCase: ChatUseCaseProtocol {
         }
         
         let message = Message(
-            id: String(UUID().hashValue),
+            id: UUID().uuidString,
             type: type,
             conversationID: conversation.id,
             senderID: senderID,
