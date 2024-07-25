@@ -9,6 +9,7 @@ import UIKit
 
 public protocol ImageCacherProtocol {
     func saveImageToDisk(_ image: UIImage) async throws -> URL?
+    func deleteImage(from url: URL) async throws
     func getImage(from url: URL) async -> UIImage?
     func getImages(from urls: [URL]) async -> [URL : UIImage]
 }
@@ -57,6 +58,22 @@ final class ImageCacheKit: ImageCacherProtocol {
                 throw CacheError.errorSavingFile(error)
             }
         })
+    }
+    
+    func deleteImage(from url: URL) async throws {
+        cacheAccessQueue.sync {
+            self._cache.removeObject(forKey: url as NSURL)
+        }
+
+        let resolvedURL = resolveURL(url)
+
+        try queue.asyncAndWait {
+            do {
+                try FileManager.default.removeItem(at: resolvedURL)
+            } catch {
+                throw CacheError.errorSavingFile(error)
+            }
+        }
     }
     
     public func getImages(from urls: [URL]) async -> [URL : UIImage] {

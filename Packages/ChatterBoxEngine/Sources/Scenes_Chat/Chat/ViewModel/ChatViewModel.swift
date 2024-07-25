@@ -117,8 +117,15 @@ public class ChatViewModel {
     func handleImageMenuInteraction(action: MenuInteractionAction, messageID: String, imageIndex: Int) {
         switch action {
         case .delete:
+            
             guard let message = self.conversation.messages.first(where: { $0.id == messageID }) else {
                 return
+            }
+            let imageURL = (message.content.imageURLs?[safe: imageIndex]).flatMap(URL.init(string:))
+            if let imageURL {
+                Task(priority: .background) {
+                    try await self.imageCacher.deleteImage(from: imageURL)
+                }
             }
             
             self.chatUseCase.updateMessage(message, change: .deleteImage(index: imageIndex))
