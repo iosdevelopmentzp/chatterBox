@@ -45,7 +45,7 @@ struct ChatViewState: Hashable {
 public final class ChatViewController: UIViewController {
     // MARK: - Nested
     
-    private typealias DataSource = UICollectionViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.MessageItem>
+    private typealias DataSource = UITableViewDiffableDataSource<ChatViewSection.SectionType, ChatViewSection.MessageItem>
     private typealias Snapshot = NSDiffableDataSourceSnapshot<ChatViewSection.SectionType, ChatViewSection.MessageItem>
     
     private var prototypeTextCell = MessageTextCell()
@@ -57,7 +57,7 @@ public final class ChatViewController: UIViewController {
     
     private var sizesCache: [ChatViewSection.MessageItem: CGSize] = [:]
     
-    private lazy var dataSource = DataSource(collectionView: collectionView) { [weak self] in
+    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] in
         self?.cell(for: $1, message: $2)
     }
     
@@ -65,8 +65,7 @@ public final class ChatViewController: UIViewController {
     
     // MARK: - UI Components
     
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: flowLayout)
-    private let flowLayout = UICollectionViewFlowLayout()
+    private lazy var tableView = UITableView(frame: .zero, style: .plain)
     private let messageComposerView = MessageComposerView(frame: .zero)
     private var bottomConstraint: NSLayoutConstraint?
     
@@ -101,31 +100,20 @@ public final class ChatViewController: UIViewController {
         self.removeKeyboardNotifications()
     }
     
-    public override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
-
-        coordinator.animate(alongsideTransition: { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
-            
-        }, completion: { [weak self] _ in
-            self?.collectionView.collectionViewLayout.invalidateLayout()
-        })
-    }
-    
     // MARK: - Setup
     
     private func setupConstraints() {
-        view.addSubview(collectionView)
+        view.addSubview(tableView)
         view.addSubview(messageComposerView)
         
-        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         messageComposerView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: self.messageComposerView.topAnchor),
+            tableView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
+            tableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            tableView.bottomAnchor.constraint(equalTo: self.messageComposerView.topAnchor),
             
             messageComposerView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
             messageComposerView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor)
@@ -136,11 +124,14 @@ public final class ChatViewController: UIViewController {
     }
     
     private func setupViews() {
-        collectionView.register(MessageTextCell.self, forCellWithReuseIdentifier: String(describing: MessageTextCell.self))
-        collectionView.register(MessageImagesCell.self, forCellWithReuseIdentifier: String(describing: MessageImagesCell.self))
-        collectionView.delegate = self
-        // Apply a vertical flip transform to the collection view
-        collectionView.transform = CGAffineTransform(scaleX: 1, y: -1)
+        tableView.separatorStyle = .none
+        tableView.separatorColor = UIColor.clear
+        tableView.estimatedRowHeight = 100
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.register(MessageTextCell.self, forCellReuseIdentifier: String(describing: MessageTextCell.self))
+        tableView.register(MessageImagesCell.self, forCellReuseIdentifier: String(describing: MessageImagesCell.self))
+        // Apply a vertical flip transform to the table view
+        tableView.transform = CGAffineTransform(scaleX: 1, y: -1)
         
         setupNavigationBar()
     }
@@ -171,7 +162,7 @@ public final class ChatViewController: UIViewController {
     func setupUserInteractions() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
-        collectionView.addGestureRecognizer(tapGesture)
+        tableView.addGestureRecognizer(tapGesture)
         
         messageComposerView.onEvent = { [weak self] event in
             switch event {
@@ -248,16 +239,16 @@ public final class ChatViewController: UIViewController {
         
         /* scrollToBTop */
         if state.containsNewMessages {
-            self.collectionView.scrollToTop(animated: true)
+            self.tableView.scrollToTop(animated: true)
         }
     }
     
-    private func cell(for indexPath: IndexPath, message: ChatViewSection.MessageItem) -> UICollectionViewCell {
+    private func cell(for indexPath: IndexPath, message: ChatViewSection.MessageItem) -> UITableViewCell {
         let identifier = String(describing: MessageTextCell.self)
-        let returnCell: UICollectionViewCell
+        let returnCell: UITableViewCell
         switch message.content {
         case .textMessage(let model):
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageTextCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as! MessageTextCell
             cell.configure(model: model)
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleMenuInteraction(action: $0, messageID: message.id)
@@ -265,7 +256,7 @@ public final class ChatViewController: UIViewController {
             returnCell = cell
         case .images(let model):
             let identifier = String(describing: MessageImagesCell.self)
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: identifier, for: indexPath) as! MessageImagesCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: identifier, for: indexPath) as! MessageImagesCell
             cell.configure(with: model, imageCacher: viewModel.imageCacher)
             cell.onInteractionAction = { [weak self] in
                 self?.viewModel.handleImageMenuInteraction(action: $0.action, messageID: $0.messageId, imageIndex: $0.index)
@@ -279,40 +270,12 @@ public final class ChatViewController: UIViewController {
     }
 }
 
-extension ChatViewController: UICollectionViewDelegateFlowLayout {
-    public func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let snapshot = self.dataSource.snapshot()
-        
-        let section = snapshot.sectionIdentifiers[indexPath.section]
-        let messageItem = snapshot.itemIdentifiers(inSection: section)[indexPath.row]
-
-        let width = collectionView.frame.width
-        let fittingSize = CGSize(width: width, height: UIView.layoutFittingCompressedSize.height)
-
-        let size: CGSize
-        
-        if let cachedValue = self.sizesCache[messageItem], cachedValue.width == width {
-            size = cachedValue
-        } else {
-            switch messageItem.content {
-            case .textMessage(let model):
-                prototypeTextCell.configure(model: model)
-                size = prototypeTextCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
-            case .images(let model):
-                prototypeImageCell.configure(with: model, imageCacher: nil)
-                size = prototypeImageCell.contentView.systemLayoutSizeFitting(fittingSize, withHorizontalFittingPriority: .required, verticalFittingPriority: .fittingSizeLevel)
-            }
-            sizesCache[messageItem] = size
-        }
-        
-        return size
-    }
-}
-
-// TODO: - move to the Extensions package
-extension UICollectionView {
-    /// Scrolls the collection view to the topmost item in the first section.
+extension UITableView {
+    /// Scrolls the table view to the first row in the first section.
     func scrollToTop(animated: Bool) {
-        self.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: animated)
+        let indexPath = IndexPath(row: 0, section: 0)
+        if self.numberOfSections > 0 && self.numberOfRows(inSection: 0) > 0 {
+            self.scrollToRow(at: indexPath, at: .top, animated: animated)
+        }
     }
 }

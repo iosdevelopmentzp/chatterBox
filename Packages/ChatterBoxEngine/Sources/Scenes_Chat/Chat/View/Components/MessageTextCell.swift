@@ -30,11 +30,11 @@ extension MenuInteractionAction {
     }
 }
 
-final class MessageTextCell: UICollectionViewCell {
+final class MessageTextCell: UITableViewCell {
     // MARK: - UI Components
     
     private let contentContainer = UIView(frame: .zero)
-    private let textLabel = UILabel(frame: .zero)
+    private let textLabelView = UILabel(frame: .zero)
     private let messageContainer = UIView()
     
     private let outputMessageBackground = UIColor(red: 0.67, green: 0.88, blue: 0.69, alpha: 1.0)
@@ -46,8 +46,8 @@ final class MessageTextCell: UICollectionViewCell {
     
     // MARK: - Constructor
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
         setupConstraints()
     }
@@ -61,18 +61,20 @@ final class MessageTextCell: UICollectionViewCell {
     private func setupViews() {
         contentView.addSubview(contentContainer)
         contentContainer.addSubview(messageContainer)
-        messageContainer.addSubview(textLabel)
+        messageContainer.addSubview(textLabelView)
         
-        textLabel.numberOfLines = 0
+        textLabelView.numberOfLines = 0
         
         messageContainer.backgroundColor = .systemBlue
         messageContainer.layer.cornerRadius = 15
         messageContainer.clipsToBounds = true
+        
+        selectionStyle = .none
     }
     
     private func setupConstraints() {
         contentContainer.translatesAutoresizingMaskIntoConstraints = false
-        textLabel.translatesAutoresizingMaskIntoConstraints = false
+        textLabelView.translatesAutoresizingMaskIntoConstraints = false
         messageContainer.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -87,11 +89,11 @@ final class MessageTextCell: UICollectionViewCell {
             messageContainer.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor, constant: 8),
             messageContainer.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor, constant: -4),
             
-            /* textLabel */
-            textLabel.topAnchor.constraint(equalTo: messageContainer.topAnchor, constant: 8),
-            textLabel.trailingAnchor.constraint(equalTo: messageContainer.trailingAnchor, constant: -8),
-            textLabel.leadingAnchor.constraint(equalTo: messageContainer.leadingAnchor, constant: 8),
-            textLabel.bottomAnchor.constraint(equalTo: messageContainer.bottomAnchor, constant: -8)
+            /* textLabelView */
+            textLabelView.topAnchor.constraint(equalTo: messageContainer.topAnchor, constant: 8),
+            textLabelView.trailingAnchor.constraint(equalTo: messageContainer.trailingAnchor, constant: -8),
+            textLabelView.leadingAnchor.constraint(equalTo: messageContainer.leadingAnchor, constant: 8),
+            textLabelView.bottomAnchor.constraint(equalTo: messageContainer.bottomAnchor, constant: -8)
         ])
         
         // Create a width constraint that is less than or equal to 70% of contentContainer's width
@@ -120,7 +122,7 @@ final class MessageTextCell: UICollectionViewCell {
     // MARK: - Configure
     
     func configure(model: MessageTextCellModel) {
-        self.textLabel.text = model.message
+        self.textLabelView.text = model.message
         updateUI(isOutputMessage: model.isOutput)
         setupMenuInteractions(model.menuInteractions)
     }

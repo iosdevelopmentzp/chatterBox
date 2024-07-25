@@ -8,7 +8,7 @@
 import UIKit
 import ImageCacheKit
 
-final class MessageImagesCell: UICollectionViewCell {
+final class MessageImagesCell: UITableViewCell {
     // MARK: - Nested
     
     typealias InteractionDetails = (messageId: String, index: Int, action: MenuInteractionAction)
@@ -47,8 +47,8 @@ final class MessageImagesCell: UICollectionViewCell {
     
     // MARK: - Constructor
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
         setupConstraints()
     }
@@ -73,6 +73,8 @@ final class MessageImagesCell: UICollectionViewCell {
         collectionView.delegate = self
         
         self.collectionView.clipsToBounds = false
+        
+        selectionStyle = .none
     }
     
     private func setupConstraints() {
@@ -84,13 +86,17 @@ final class MessageImagesCell: UICollectionViewCell {
             contentContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
             contentContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             contentContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            contentContainer.heightAnchor.constraint(equalToConstant: 200),
             
             collectionView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor)
         ])
+        
+        
+        let height = contentContainer.heightAnchor.constraint(equalToConstant: 200)
+        height.priority = .init(999)
+        height.isActive = true
     }
     
     // MARK: - Private
@@ -123,7 +129,7 @@ final class MessageImagesCell: UICollectionViewCell {
     // MARK: - Configure
     
     func configure(with model: MessageImageCellModel, imageCacher: ImageCacherProtocol?) {
-        self.collectionView.scrollToTop(animated: false)
+        self.collectionView.scrollRectToVisible(CGRect(x: 0, y: 0, width: 1, height: 1), animated: false)
         
         self.isOutput = model.isOutput
         self.contentContainer.transform = messageTransform
