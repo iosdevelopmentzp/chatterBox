@@ -20,10 +20,9 @@ final class MessageComposerView: UIView {
     
     private let stackView = UIStackView(frame: .zero)
     private let textField = UITextField(frame: .zero)
+    private let textFieldBackground = UIView(frame: .zero)
     private let sendButton = UIButton(type: .system)
     private let attachButton = UIButton(type: .system)
-    private let topSeparator = UIView(frame: .zero)
-    private let bottomSeparator = UIView(frame: .zero)
     
     // MARK: - Handlers
     
@@ -45,16 +44,12 @@ final class MessageComposerView: UIView {
     // MARK: - Setup
     
     private func setupViews() {
-        addSubview(topSeparator)
-        addSubview(stackView)
-        addSubview(bottomSeparator)
-        
-        stackView.addArrangedSubview(textField)
-        stackView.addArrangedSubview(attachButton)
-        stackView.addArrangedSubview(sendButton)
-        
         stackView.axis = .horizontal
         stackView.spacing = 8
+        
+        textFieldBackground.layer.cornerRadius = 8
+        textFieldBackground.layer.borderWidth = 1
+        textFieldBackground.layer.borderColor = UIColor.lightGray.cgColor
         
         backgroundColor = .white
         
@@ -64,34 +59,30 @@ final class MessageComposerView: UIView {
         attachButton.setPreferredSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 22, weight: .medium), forImageIn: .normal)
 
         updateSendButtonState(animated: false)
-        
-        topSeparator.backgroundColor = .separator
-        bottomSeparator.backgroundColor = .separator
     }
     
     private func setupConstraints() {
-        topSeparator.translatesAutoresizingMaskIntoConstraints = false
-        bottomSeparator.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(textFieldBackground)
+        addSubview(stackView)
+        
+        stackView.addArrangedSubview(textField)
+        stackView.addArrangedSubview(attachButton)
+        stackView.addArrangedSubview(sendButton)
+        
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        textFieldBackground.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            /* separator */
-            
-            topSeparator.heightAnchor.constraint(equalToConstant: 1),
-            topSeparator.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            topSeparator.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            topSeparator.topAnchor.constraint(equalTo: self.topAnchor),
-            
             /* stackView */
             stackView.topAnchor.constraint(equalTo: self.topAnchor, constant: 8),
             stackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
             stackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             stackView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
             
-            bottomSeparator.heightAnchor.constraint(equalToConstant: 1),
-            bottomSeparator.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            bottomSeparator.trailingAnchor.constraint(equalTo: self.trailingAnchor),
-            bottomSeparator.bottomAnchor.constraint(equalTo: self.bottomAnchor),
+            textFieldBackground.leadingAnchor.constraint(equalTo: self.textField.leadingAnchor, constant: -4),
+            textFieldBackground.trailingAnchor.constraint(equalTo: self.textField.trailingAnchor, constant: 4),
+            textFieldBackground.topAnchor.constraint(equalTo: self.textField.topAnchor, constant: -6),
+            textFieldBackground.bottomAnchor.constraint(equalTo: self.textField.bottomAnchor, constant: 6),
         ])
         
         [sendButton, attachButton].forEach {
