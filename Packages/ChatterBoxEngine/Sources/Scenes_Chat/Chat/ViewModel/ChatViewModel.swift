@@ -158,43 +158,26 @@ public class ChatViewModel {
         conversation: Conversation?,
         currentUser: User
     ) -> ChatViewState {
-        let messages: [ChatViewSection.MessageItem]? = conversation?.messages.compactMap({
-            message -> ChatViewSection.MessageItem? in
-            let content: ChatViewSection.MessageItem.Content?
-            let isOutput = message.senderID == currentUser.id
-            switch message.type {
-            case .text:
-                content = .textMessage(.init(
-                    id: message.id,
-                    message: message.content.text ?? "",
-                    menuInteractions: [.delete],
-                    isOutput: isOutput
-                ))
-            case .image:
-                content = .images(model: .init(
-                    id: message.id,
-                    imageURLs: message.content.imageURLs ?? [],
-                    menuInteractions: [.delete],
-                    isOutput: isOutput
-                ))
-            case .unknown:
-                content = nil
-            }
-            
-            guard let content else { return nil }
-            
-            return .init(id: message.id, content: content)
+        /* 1. try to map the original messages */
+        let messages = conversation?.messages.compactMap({
+            let isOutput = $0.senderID == currentUser.id
+            return ChatViewSection.MessageItem(message: $0, isOutput: isOutput, actions: [.delete])
         })
         
         let newMessages: [ChatViewSection.MessageItem]
+        
+        /* 2. Get current state messages */
         let previousMessages = (previousState?.sections ?? []).flatMap(\.items)
         
+        /* 3. Take original messages If we got it (probably something has been changed)... */
         if let messages {
             newMessages = messages
         } else {
+            /* 4. ...otherwise reuse the existed ones */
             newMessages = previousMessages
         }
         
+        /* 5. New sections */
         let newSection = ChatViewSection(type: .main, items: newMessages)
         
         return .init(
@@ -203,6 +186,36 @@ public class ChatViewModel {
             composerViewModel: .init(text: context.inputText),
             containsNewMessages: newMessages.first != previousMessages.first
         )
+    }
+}
+
+private extension ChatViewSection.MessageItem {
+    init?(message: Message, isOutput: Bool, actions: [MenuInteractionAction]) {
+        let content: ChatViewSection.MessageItem.Content?
+        switch message.type {
+        case .text:
+            content = .textMessage(.init(
+                id: message.id,
+                message: message.content.text ?? "",
+                menuInteractions: actions,
+                isOutput: isOutput
+            ))
+        case .image:
+            content = .images(model: .init(
+                id: message.id,
+                imageURLs: message.content.imageURLs ?? [],
+                menuInteractions: actions,
+                isOutput: isOutput
+            ))
+        case .unknown:
+            content = nil
+        }
+        
+        guard let content else {
+            return nil
+        }
+        
+        self = .init(id: message.id, content: content)
     }
 }
 
